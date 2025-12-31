@@ -1,0 +1,58 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+  <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+    <form (ngSubmit)="submit()" class="space-y-6 p-6">
+
+      <h2 class="text-2xl font-bold text-gray-900 mb-6">
+        {{ form.id ? 'Edit Shipping Address' : 'Add Shipping Address' }}
+      </h2>
+
+      <!-- Address -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Address</label>
+        <input type="text" [(ngModel)]="form.addressLine" name="addressLine" required
+          class="mt-1 block w-full text-black px-3 py-2 border rounded-md">
+      </div>
+
+      <!-- City -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">City</label>
+        <input type="text" [(ngModel)]="form.city" name="city" required
+          class="mt-1 block w-full text-black px-3 py-2 border rounded-md">
+      </div>
+
+      <!-- State -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">State</label>
+        <input type="text" [(ngModel)]="form.state" name="state" required
+          class="mt-1 block w-full text-black px-3 py-2 border rounded-md">
+      </div>
+
+      <!-- Pincode -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Pincode</label>
+        <input type="number" [(ngModel)]="form.pincode" name="pincode" required
+          class="mt-1 block w-full text-black px-3 py-2 border rounded-md">
+      </div>
+
+      <!-- Phone -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Phone</label>
+        <input type="number" [(ngModel)]="form.phone" name="phone" required
+          class="mt-1 block w-full text-black px-3 py-2 border rounded-md">
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end gap-4 mt-6">
+        <button type="button" (click)="onCancel()" class="px-4 py-2 bg-gray-200 rounded-md">
+          Cancel
+        </button>
+
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md">
+          {{ form.id ? 'Update Address' : 'Save Address' }}
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+</div>

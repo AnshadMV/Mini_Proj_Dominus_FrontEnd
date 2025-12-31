@@ -1,0 +1,103 @@
+<div class="flex flex-col lg:flex-row min-h-screen w-full bg-gray-50 transition-all duration-500 ease-in-out">
+  <div class="w-full lg:w-1/2 flex items-center justify-center bg-white px-6 lg:px-10 py-10 lg:py-0 transition-all duration-500 ease-in-out transform lg:translate-x-0">
+    <div class="w-full max-w-sm transition-all duration-500 ease-in-out">
+      <div class="flex items-center justify-center">
+        <img src="./../../../../assets/images/Dominus_black.png" alt="Modernize Logo" class="w-24 h-24 mr-2" />
+      </div>
+
+      <h2 class="text-lg font-semibold text-gray-800 text-center mb-1">
+        Create Account
+      </h2>
+      <p class="text-gray-500 text-center mb-5 text-sm">
+        Join us by creating your account
+      </p>
+
+      <div class="flex gap-3 mb-4 justify-center">
+        <button type="button"
+          class="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm">
+          <i class="fa-brands fa-google fa-xl fa-bounce" style="color: #ff3018;"></i>
+        </button>
+
+        <button type="button"
+          class="w-12 h-12 border border-gray-300 rounded-lg flex items-center justify-center bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm">
+          <i class="fa-brands fa-facebook-f fa-xl fa-bounce" style="color: #1877f2;"></i>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-center mb-4">
+        <div class="w-1/3 border-t border-gray-200"></div>
+        <span class="mx-2 text-gray-400 text-xs">or</span>
+        <div class="w-1/3 border-t border-gray-200"></div>
+      </div>
+
+      <form class="space-y-4" #registerForm="ngForm" (ngSubmit)="onSubmit(registerForm)">
+        <div>
+          <label for="name" class="block text-gray-700 text-xs font-medium mb-1">
+            Full Name
+          </label>
+          <div class="relative">
+            <i data-lucide="user" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+            <input type="text" id="name" placeholder="Enter your full name" required minlength="3" [(ngModel)]="name"
+              name="name" #nameField="ngModel"
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:border-transparent bg-gray-50 text-black"
+              [class.border-red-500]="nameField.invalid && nameField.touched">
+          </div>
+          <p *ngIf="nameField.invalid && nameField.touched" class="text-red-500 text-xs mt-1">
+            Name must be at least 3 characters long.
+          </p>
+        </div>
+        <div>
+          <label for="email" class="block text-gray-700 text-xs font-medium mb-1">
+            Email Address
+          </label>
+          <div class="relative">
+            <i data-lucide="mail" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+            <input type="email" id="email" placeholder="Enter your email" required email [(ngModel)]="email"
+              name="email" #emailField="ngModel"
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:border-transparent bg-gray-50 text-black"
+              [class.border-red-500]="emailField.invalid && emailField.touched">
+          </div>
+          <p *ngIf="emailField.invalid && emailField.touched" class="text-red-500 text-xs mt-1">
+            Please enter a valid email address.
+          </p>
+        </div>
+        <div >
+          <label for="password" class="block text-gray-700 text-xs font-medium mb-1">
+            Password
+          </label>
+          <div class="relative">
+            <i data-lucide="lock" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+            <input type="password" id="password" placeholder="Enter password" required minlength="6"
+              [(ngModel)]="password" name="password" #passwordField="ngModel"
+              class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:border-transparent bg-gray-50 text-black"
+              [class.border-red-500]="passwordField.invalid && passwordField.touched">
+          </div>
+          <p *ngIf="passwordField.invalid && passwordField.touched" class="text-red-500 text-xs mt-1">
+            Password must be at least 6 characters long.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 text-xs px-3 py-2">
+          <input type="checkbox" id="terms" required
+            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+          <label for="terms" class="text-gray-600">
+            I agree to the <a href="https://policies.google.com/terms?hl=en-US" class="text-blue-600 hover:text-blue-800 font-medium">Terms &
+              Conditions</a>
+          </label>
+        </div>
+
+        <app-button [label]="'Sign In'" [type]="'submit'" [color]="'blue'" class="w-full"> Sign Up
+        </app-button>
+      </form>
+      <p class="text-center text-xs text-gray-500 mt-4">
+        Already have an account?
+        <a routerLink="/app-login" class="text-blue-600 hover:underline font-medium">
+          Sign in
+        </a>
+      </p>
+    </div>
+  </div>
+   <div class="hidden lg:flex lg:w-1/2 w-full items-center justify-center relative overflow-hidden bg-white transition-all duration-700 ease-in-out transform translate-x-0">
+    <img src="./../../../../assets/images/register.jpg" alt="Login Illustration" 
+         class="max-w-full h-auto object-contain transition-all duration-500 ease-in-out transform hover:scale-105" />
+  </div>
+</div>

@@ -1,0 +1,67 @@
+import { Component, HostListener } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { navigationEndFilter } from './shared/pipes/rxjs_pipes/navigation-end-filter';
+import { AuthService } from './core/services/auth.service';  // Add this import
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+
+  showHeader = true;
+  showFooter = true;
+  showNavbarPadding = true;
+  showTopNavbar = true;
+
+  hideOnRoutes_header = ['/app-login', '/app-register', '/admin', '', '/admin/**'];
+  showOnRoutes_footer = ['/app-home', '/app-about', '/app-profile', '/admin',];
+  hideOnRoutes_navbarPadding = ['/app-login', '/app-register', '/app-home', '/app-not-found', '/admin/**'];
+
+  constructor(private router: Router, private auth: AuthService) {
+    this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        const currentRoute = this.router.url;
+
+        if (currentRoute.includes('/app-login')) {
+          this.showHeader = false;
+          this.showFooter = false;
+        } else {
+          this.showHeader = true;
+          this.showFooter = true;
+        }
+      }
+    });
+  }
+
+  ngOnInit() {
+    this.auth.initAuthState();
+    this.auth.isAuthenticated$.subscribe(isAuth => {
+      console.log('Auth state:', isAuth);
+    });
+    console.log("hi");
+    this.auth.getMyProfile().subscribe({
+      next: (res) => {
+        console.log("User DAta: ", res.data);
+      },
+      error: () => {
+        console.log("No logged-in user");
+      }
+    });
+    navigationEndFilter(this.router.events)
+      .subscribe(event => {
+        const navEnd = event as NavigationEnd;
+        const baseRoute = navEnd.urlAfterRedirects.split('?')[0];
+
+        const isAdminRoute = baseRoute.startsWith('/admin') || baseRoute.includes('/admin/');
+
+        this.showHeader = !this.hideOnRoutes_header.includes(baseRoute) && !isAdminRoute;
+        this.showFooter = this.showOnRoutes_footer.includes(baseRoute) && !isAdminRoute;
+        this.showNavbarPadding = !this.hideOnRoutes_navbarPadding.includes(baseRoute) && !isAdminRoute;
+      });
+  }
+  onTopNavbarVisibilityChange(visible: boolean) {
+    this.showTopNavbar = visible;
+  }
+}

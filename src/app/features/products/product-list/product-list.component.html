@@ -1,0 +1,306 @@
+<section class="bg-white py-8">
+    <div class="container mx-auto px-4">
+        <!-- Grid Layout: 1 column on small screens, 12 cols on medium+ -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+
+            <!-- Left Sidebar: Filters & Header (3/12) -->
+            <div class="md:col-span-3 space-y-4">
+
+                <!-- Page Header -->
+                <div class="mb-2">
+                    <h1 class="text-2xl font-bold text-black mb-2">Apple Store</h1>
+                    <p class="text-gray-900 text-sm">Premium products, exceptional quality</p>
+                </div>
+                <!-- Compact Filters -->
+                <div
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-2 rounded-xl border border-gray-200 mb-4 gap-2">
+                    <!-- Button Group -->
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-2">
+                        <!-- Cart -->
+                        <button routerLink="/app-cart"
+                            class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-cart-shopping text-blue-400 fa-bounce"></i>
+                            <span>Cart</span>
+                        </button>
+
+                        <!-- Orders -->
+                        <button routerLink="/app-orders"
+                            class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-box fa-bounce text-green-400"></i>
+                            <span>Orders</span>
+                        </button>
+
+                        <!-- Filters -->
+                        <button (click)="toggleFilters()"
+                            class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-filter fa-bounce text-purple-400"></i>
+                            <span>Filters</span>
+                        </button>
+                    </div>
+                </div>
+
+
+
+                <div *ngIf="!showFilters" class="hidden md:flex">
+                    <img
+                        src="https://plus.unsplash.com/premium_vector-1721296173933-61a7b99282fc?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880">
+                </div>
+                <!-- Expandable Filters Section -->
+                <div *ngIf="showFilters"
+                    class="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-200 transition-all duration-300 space-y-4">
+                    <!-- Search -->
+                    <input type="text" [(ngModel)]="searchTerm" (input)="onSearchChange()" placeholder="Search..."
+                        class="text-black w-full bg-white border border-gray-300 rounded-full py-2 px-4 text-sm placeholder-gray-500 outline-none" />
+
+                    <!-- Category Filter -->
+                    <div *ngIf="categories.length > 0">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-2">Category</h3>
+                        <div class="flex overflow-x-auto gap-2 hide-scrollbar">
+                            <button (click)="onCategoryChange('all')" [ngClass]="{
+                  'bg-black text-white': selectedCategory === 'all',
+                  'bg-gray-200 text-gray-800 hover:bg-gray-300': selectedCategory !== 'all'
+                }" class="flex-shrink-0 px-4 py-2 rounded-full font-medium text-sm transition-all duration-200">
+                                All Categories
+                            </button>
+                            <button *ngFor="let category of categories" (click)="onCategoryChange(category.id)"
+                                [ngClass]="{
+                  'bg-black text-white': selectedCategory === category.id,
+                  'bg-gray-200 text-gray-800 hover:bg-gray-300': selectedCategory !== category.id
+                }" class="flex-shrink-0 px-4 py-2 rounded-full font-medium text-sm transition-all duration-200">
+                                {{ category.name }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Price Range Filter -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800 mb-2">Price Range</h3>
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs text-gray-600">
+                                <span>{{ minPrice | currency:'INR' }}</span>
+                                <span>{{ maxPrice | currency:'INR' }}</span>
+                            </div>
+                            <input type="range" [(ngModel)]="priceRange[0]" (change)="onPriceRangeChange()"
+                                [min]="minPrice" [max]="maxPrice"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <input type="range" [(ngModel)]="priceRange[1]" (change)="onPriceRangeChange()"
+                                [min]="minPrice" [max]="maxPrice"
+                                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="flex justify-between text-sm text-gray-700">
+                                <span>Min: {{ priceRange[0] | currency:'INR' }}</span>
+                                <span>Max: {{ priceRange[1] | currency:'INR' }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Color Filter -->
+                    <div *ngIf="availableColors.length > 0">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-2">Colors</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button *ngFor="let color of availableColors" (click)="toggleColorFilter(color)" [ngClass]="{
+                  'ring-2 ring-black': selectedColors.includes(color),
+                  'ring-1 ring-gray-300': !selectedColors.includes(color)
+                }" class="flex items-center gap-2 px-3 py-2 bg-white rounded-full text-sm transition-all duration-200">
+                                <div class="w-4 h-4 rounded-full border border-gray-300"
+                                    [style.background-color]="color.toLowerCase()"></div>
+                                <span class="capitalize">{{ color }}</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Popular Filter -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800 mb-2">Popularity</h3>
+                        <button (click)="togglePopularFilter()" [ngClass]="{
+                'bg-black text-white': showOnlyPopular,
+                'bg-gray-200 text-gray-800 hover:bg-gray-300': !showOnlyPopular
+              }" class="px-4 py-2 rounded-full font-medium text-sm transition-all duration-200">
+                            Hot Products Only
+                        </button>
+                    </div>
+
+                    <!-- Stock Filter -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-800 mb-2">Stock Status</h3>
+                        <button (click)="toggleInStockFilter()" [ngClass]="{
+                'bg-green-600 text-white': showOnlyInStock,
+                'bg-gray-200 text-gray-800 hover:bg-gray-300': !showOnlyInStock
+              }" class="px-4 py-2 rounded-full font-medium text-sm transition-all duration-200">
+                            In Stock Only
+                        </button>
+                    </div>
+
+                    <!-- Filter Actions -->
+                    <div class="flex gap-2 pt-2 border-t border-gray-200">
+                        <button (click)="clearFilters()"
+                            class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-300 transition-colors">
+                            Clear All
+                        </button>
+                        <button (click)="applyFilters()"
+                            class="flex-1 bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Right Content: Products Grid (9/12) -->
+            <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
+                <!-- Loading -->
+                <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+                </div>
+
+
+                <div class="flex justify-between items-center">
+                    <div class="text-gray-800 text-sm font-medium">Total {{ filteredProducts.length }} products
+                        Found
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-800 text-sm whitespace-nowrap">Sort by:</span>
+                        <select [(ngModel)]="sortBy" (change)="onSortChange(sortBy)"
+                            class="bg-white border border-gray-300 rounded-full py-1.5 px-3 text-sm text-gray-700 outline-none">
+                            <option value="name">Name</option>
+                            <option value="price">Price</option>
+                            <option value="currentStock">Stock</option>
+                        </select>
+                        <button (click)="onSortChange(sortBy)"
+                            class="bg-white text-black p-1.5 rounded-full hover:bg-gray-800 transition-colors text-sm border border-gray-200">
+                            <i class="fa-solid" [class.fa-arrow-up]="sortDirection === 'asc'"
+                                [class.fa-arrow-down]="sortDirection === 'desc'"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- Products Grid -->
+                <div *ngIf="!isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+
+                    <div *ngFor="let product of paginatedProducts"
+                        class="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 group flex flex-col h-full">
+                        <!-- Product Image Section -->
+                        <div (click)="viewProductDetail(product)" class="cursor-pointer flex-grow">
+                            <div class="aspect-square bg-gray-50 relative overflow-hidden">
+                                <img [src]="product.images" [alt]="product.name"
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+
+                                <!-- Badges positioned over image -->
+                                <div class="absolute top-3 left-3 right-3 flex justify-between items-start">
+                                    <div
+                                        class="text-xs bg-blue-500 text-white px-3 py-1.5 rounded-full backdrop-blur-sm">
+                                        {{ product.categoryName | titlecase }}
+                                    </div>
+                                    <div *ngIf="product.topSelling"
+                                        class="text-xs bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1.5 rounded-full shadow-md">
+                                        🔥 Hot
+                                    </div>
+                                </div>
+
+                                <!-- Stock status overlay -->
+                                <div class="absolute bottom-3 left-3">
+                                    <span class="text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm"
+                                        [class.bg-green-100]="product.currentStock > 0"
+                                        [class.bg-red-100]="product.currentStock === 0"
+                                        [class.text-green-800]="product.currentStock > 0"
+                                        [class.text-red-800]="product.currentStock === 0">
+                                        {{product.currentStock > 0 ? '✓ In Stock' : '✗ Out of Stock'}}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Info Section -->
+                        <div class="p-2 flex-grow-0">
+                            <!-- Product Name & Price -->
+                            <div class="">
+                                <h3 class="text-lg font-bold text-gray-900 line-clamp-2 leading-tight">
+                                    {{ product.name }}
+                                </h3>
+                                <div class="flex items-center justify-between">
+                                    <p class="text-xl font-extrabold text-black">{{ product.price | currency:'INR' }}
+                                    </p>
+                                    <span *ngIf="product.topSelling" class="text-sm text-amber-600 font-medium">
+                                        ⭐ Popular
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Product Stats -->
+                            <div class="flex justify-between items-center py-2 border-y border-gray-100">
+                                <div class="text-center flex-1">
+                                    <p class="text-sm font-bold text-gray-900">{{product.currentStock}}</p>
+                                    <p class="text-xs text-gray-500">Available</p>
+                                </div>
+                                <div class="w-px h-6 bg-gray-200"></div>
+                                <div class="text-center flex-1">
+                                    <p class="text-sm font-bold text-gray-900">{{ product.availableColors.length || 1 }}</p>
+                                    <p class="text-xs text-gray-500">Colors</p>
+                                </div>
+                                <div class="w-px h-6 bg-gray-200"></div>
+                                <div class="text-center flex-1">
+                                    <p class="text-sm font-bold" [class.text-green-600]="product.topSelling"
+                                        [class.text-gray-500]="!product.topSelling">
+                                        {{ product.topSelling ? 'Yes' : 'No' }}
+                                    </p>
+                                    <p class="text-xs text-gray-500">Trending</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="p-2 pt-0">
+                            <div class="flex gap-3 items-center">
+                                <button (click)="viewProduct(product)"
+                                    class="flex-1 bg-black text-white px-2 py-2 rounded-xl text-xs font-semibold hover:bg-gray-800 active:scale-95 transition-all duration-200">
+                                    Buy Now
+                                </button>
+
+                                <div class="flex gap-2">
+                                    <button (click)="addTowishlist(product)"
+                                        class="w-10 h-10 rounded-xl border border-gray-300 flex items-center justify-center hover:border-red-300 hover:bg-red-50 transition-colors">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor"
+                                            class="w-5 h-5 text-gray-600 hover:text-red-500 transition-colors">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                                        </svg>
+                                    </button>
+
+                                    <button (click)="addToCart(product)" [class]="getAddToCartButtonClass(product)"
+                                        class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all duration-200 shadow-sm">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div *ngIf="totalPages > 1" class="flex justify-center items-center gap-2 mt-6 mb-6">
+                    <button (click)="prevPage()" [disabled]="currentPage === 1"
+                        class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300 disabled:opacity-50 text-black">Prev</button>
+
+                    <button *ngFor="let page of [].constructor(totalPages); let i = index" (click)="goToPage(i+1)"
+                        [ngClass]="{'bg-black text-white': currentPage === i+1, 'bg-gray-200 text-gray-800 hover:bg-gray-300': currentPage !== i+1}"
+                        class="px-3 py-1 rounded transition-colors">
+                        {{ i + 1 }}
+                    </button>
+
+                    <button (click)="nextPage()" [disabled]="currentPage === totalPages"
+                        class="px-3 py-1 text-black bg-gray-200 hover:bg-gray-300 disabled:opacity-50">Next</button>
+                </div>
+                <!-- Empty State -->
+                <div *ngIf="!isLoading && filteredProducts.length === 0" class="text-center py-12">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                        <i class="fa-solid fa-search text-xl text-gray-400"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">No products found</h3>
+                    <p class="text-gray-500 text-sm mb-4">Try different search terms</p>
+                    <button (click)="clearFilters()"
+                        class="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

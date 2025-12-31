@@ -1,0 +1,42 @@
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 px-4"
+  *ngIf="visible">
+
+  <div class="bg-white rounded-lg p-6 w-full max-w-md">
+    <h2 class="text-xl font-bold mb-4">Edit Profile</h2>
+
+    <form (ngSubmit)="saveChanges()" #editForm="ngForm" class="space-y-4">
+
+      <!-- Name -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Name</label>
+        <input
+          [(ngModel)]="form.name"
+          name="name"
+          required
+          class="w-full px-3 py-2 border rounded-md" />
+      </div>
+
+      <!-- Email (READ ONLY) -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Email</label>
+        <input
+          [value]="user?.email"
+          readonly
+          class="w-full px-3 py-2 border rounded-md bg-gray-100 " />
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" (click)="close()"
+          class="px-4 py-2 bg-gray-300 rounded">
+          Cancel
+        </button>
+
+        <button type="submit"
+          class="px-4 py-2 bg-blue-600 text-white rounded">
+          Save
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

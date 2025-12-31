@@ -1,0 +1,22 @@
+<div class="admin-layout flex h-screen bg-gray-100">
+  <!-- Sidebar -->
+  <app-admin-sidebar [isCollapsed]="isSidebarCollapsed" (toggleSidebar)="toggleSidebar()">
+  </app-admin-sidebar>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Header -->
+    <app-admin-header (toggleSidebar)="toggleSidebar()">
+    </app-admin-header>
+
+    <!-- Page Content -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto p-6">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>
+<!-- Floating Action Button -->
+<!-- <button mat-fab color="primary" aria-label="Delete"
+  class="fixed shadow-lg bg-blue-600 text-black hover:bg-blue-700 flex items-center justify-center w-14 h-14 rounded-full">
+  <mat-icon>delete</mat-icon>
+</button> -->

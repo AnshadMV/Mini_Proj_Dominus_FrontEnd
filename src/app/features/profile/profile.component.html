@@ -1,0 +1,186 @@
+<section class="bg-white py-8">
+    <div class="container mx-auto px-4">
+        <!-- Grid Layout: 1 column on small screens, 12 cols on medium+ -->
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+
+            <!-- Left Sidebar: Filters & Header (3/12) -->
+            <div class="md:col-span-3 space-y-4">
+
+                <!-- Page Header -->
+                <div class="mb-2">
+                    <h1 class="text-2xl font-bold text-black mb-2">Contact Us</h1>
+                    <p class="text-gray-900 text-sm">Premium products, exceptional quality</p>
+                </div>
+                <!-- Compact Filters -->
+                <div
+                    class="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-2 rounded-xl border border-gray-200 mb-4 gap-2">
+                    <!-- Button Group -->
+                    <div class="flex flex-wrap justify-center sm:justify-start gap-2">
+                        <!-- Cart -->
+                        <button routerLink="/app-cart"
+                            class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-cart-shopping fa-bounce text-blue-400"></i>
+                            <span>Cart</span>
+                        </button>
+
+                        <!-- Orders -->
+                        <button routerLink="/app-orders"
+                            class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-box fa-bounce text-green-400"></i>
+                            <span>Orders</span>
+                        </button>
+
+                        <!-- Filters -->
+                        <button routerLink="/app-about"
+                            class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
+                            <i class="fa-solid fa-phone fa-shake" style="color: #B197FC;"></i> <span>About Us</span>
+                        </button>
+                    </div>
+                </div>
+
+
+
+                <div class="hidden md:flex">
+                    <img
+                        src="https://plus.unsplash.com/premium_vector-1736887969812-90a5ffeae886?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880">
+                </div>
+
+            </div>
+
+            <!-- Right Content: Products Grid (9/12) -->
+            <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
+
+
+
+                <div class="flex justify-between pb-2">
+                    <button routerLink="/app-home"
+                        class="flex items-center gap-2 text-gray-600 hover:text-black transition-colors">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span class=" text-sm font-medium">Back to Home</span>
+                    </button>
+                </div>
+
+
+                <section class="bg-white py-10">
+                    <div class="container mx-auto px-4">
+                        <div
+                            class="max-w-5xl mx-auto border border-gray-200 rounded-2xl shadow-sm p-8 bg-white animate-fadeInUp">
+
+                            <!-- Profile Header -->
+                            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-8 mb-10">
+                                <!-- Profile Image -->
+                                <div class="relative w-32 h-32">
+                                    <div
+                                        class="rounded-full w-full h-full border-4 border-yellow-400 bg-gray-100 overflow-hidden flex items-center justify-center">
+                                        <img src="https://plus.unsplash.com/premium_vector-1720740375507-2c946054580f?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=880"
+                                            alt="Profile Image" class="object-cover w-full h-full" />
+                                    </div>
+                                </div>
+
+                                <!-- Profile Info -->
+                                <div class="flex-1 sm:text-left">
+                                    <h2 class="text-3xl font-bold text-gray-900 mb-1">{{userName}}</h2>
+                                    <p class="text-gray-500 text-sm mb-4">Your Id : <span
+                                            class="text-blue-400">{{userId}}</span></p>
+
+                                    <!-- Action Buttons -->
+                                    <div class="flex flex-wrap justify-center sm:justify-start gap-4">
+                                        <button (click)="openModal()"
+                                            class="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition">
+                                            Edit Profile
+                                        </button>
+
+
+
+                                        <button (click)="openPasswordModal()"
+                                            class="px-6 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition">
+                                            Change Password
+                                        </button>
+
+                                        <button (click)="openShippingModal()"
+                                            class="px-6 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition">
+                                            Shipping Address
+                                        </button>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="border-t border-gray-200 my-8"></div>
+
+                            <!-- User Details Grid -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div
+                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105">
+                                    <h4 class="text-gray-600 font-semibold mb-1">E-Mail</h4>
+                                    <p class="text-gray-800 break-all">{{userEmail}}</p>
+                                </div>
+
+                                <div
+                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105 delay-75">
+                                    <h4 class="text-gray-600 font-semibold mb-1">Name</h4>
+                                    <p class="text-gray-800">{{userName}}</p>
+                                </div>
+
+                                <div
+                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105 delay-100">
+                                    <h4 class="text-gray-600 font-semibold mb-1">Last Signed In</h4>
+                                    <p class="text-gray-800">{{userSignedTime}}</p>
+                                </div>
+
+                                <div
+                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105 delay-150">
+                                    <h4 class="text-gray-600 font-semibold mb-1">Role</h4>
+                                    <p class="text-gray-800">{{userRole}}</p>
+                                </div>
+                            </div>
+                            <!-- Shipping Address Section -->
+                            <div class="border-t border-gray-200 my-8"></div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div
+                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105">
+                                    <h4 class="text-gray-600 font-semibold mb-1">Shipping Address</h4>
+                                    <p *ngIf="!activeShipping" class="text-gray-500">
+                                        No shipping address added yet.
+                                    </p>
+                                    <div *ngIf="activeShipping">
+                                        <p class="text-gray-800">
+                                            {{ activeShipping.addressLine }},
+                                            {{ activeShipping.city }},
+                                            {{ activeShipping.state }} - {{ activeShipping.pincode }}
+                                        </p>
+                                        <p class="text-gray-800">
+                                            Phone: {{ activeShipping.phone }}
+                                        </p>
+                                        <span class="text-xs text-green-600 font-semibold">Active</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<app-profile-edit class="text-black" [visible]="showModal" [user]="userData" (closeModal)="closeModal()"
+    (updateUser)="onUserUpdate($event)">
+</app-profile-edit>
+
+
+
+<app-password-edit class="text-black"
+  [visible]="showPasswordModal"
+  (closePasswordModal)="closePasswordModal()">
+</app-password-edit>
+
+    <app-shipping-address-modal
+  *ngIf="showShippingModal"
+  [address]="activeShipping"
+  (refresh)="loadShippingAddresses()"
+  (close)="closeShippingModal()">
+</app-shipping-address-modal>

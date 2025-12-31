@@ -1,0 +1,19 @@
+<div *ngIf="toasts.length > 0" class="fixed right-3 top-10 flex flex-col gap-2 p-4">
+  <div *ngFor="let toast of toasts" class="toast-card animate-slideIn" [ngClass]="toast.type">
+
+    <div class="flex items-start gap-3">
+      <div class="icon-circle">
+        <span *ngIf="toast.type === 'success'">✔️</span>
+
+      </div>
+      <div class="ml-3 text-message font-bold">
+        {{ toast.message }}
+      </div>
+      <button (click)="remove(toast.id)" class="ml-auto text-red-600 hover:text-gray-800 ">✖</button>
+    </div>
+    <div class="progress-bar-background">
+      <div class="progress-bar" [style.width.%]="toast.progress"></div>
+    </div>
+
+  </div>
+</div>
