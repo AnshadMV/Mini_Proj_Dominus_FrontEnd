@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Category } from '../../models/base-models/Category.model';
-
 @Injectable({
   providedIn: 'root'
 })
@@ -16,14 +15,7 @@ export class CategoriesService {
   getCategories(): Observable<Category[]> {
     return this.http.get<any>(`${this.baseUrl}/Get_All`)
       .pipe(
-        map(res => res.data.map((c: any) => ({
-          id: c.id,
-          name: c.name,
-          description: c.description,
-          status: c.isActive,
-          color: '#3498db',
-          icon: 'https://via.placeholder.com/150'
-        })))
+        map(res => res.data as Category[])
       );
   }
 
@@ -31,18 +23,18 @@ export class CategoriesService {
     const body = {
       name: category.name,
       description: category.description ?? '',
-      isActive: category.status ?? true
+      isActive: category.isActive ?? true
     };
 
     return this.http.post(`${this.baseUrl}/Admin/Create`, body);
   }
 
-  updateCategory(id: number, category: Partial<Category>) {
+  updateCategory(category: Partial<Category>) {
     const body = {
-      id: id,
+      id: category.id,
       name: category.name,
       description: category.description ?? '',
-      isActive: category.status
+      isActive: category.isActive
     };
 
     return this.http.put(`${this.baseUrl}/Admin/Update`, body);
@@ -50,5 +42,9 @@ export class CategoriesService {
 
   deleteCategory(id: number) {
     return this.http.delete(`${this.baseUrl}/Admin/DeleteBy_${id}`);
+  }
+
+  toggleStatus(id: number) {
+    return this.http.patch(`${this.baseUrl}/Admin/toggle/status${id}`, null);
   }
 }

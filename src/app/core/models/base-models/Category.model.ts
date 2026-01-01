@@ -5,4 +5,7 @@ export interface Category {
   status: boolean;   // map from isActive
   icon?: string;
   color?: string;
+    isActive: boolean;
+  productCount?: number;
+
 }
