@@ -5,6 +5,7 @@ import { AdminComponent } from './admin.component';
 import { UsersComponent } from './components/users/users.component';
 import { AdminOrdersComponent } from './components/orders/orders.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { AdminGuard } from 'src/app/core/guards/admin.guard';
 const routes: Routes = [
     {
         path: '',
@@ -15,7 +16,9 @@ const routes: Routes = [
             { path: 'dashboard', component: DashboardComponent }, // Clean route
             {
                 path: 'products',
-                loadChildren: () => import('./components/products/admin-product.module').then(m => m.AdminProductModule)
+                loadChildren: () => import('./components/products/admin-product.module').then(m => m.AdminProductModule),
+               
+
             },
             {
                 path: 'users',

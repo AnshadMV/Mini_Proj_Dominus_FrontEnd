@@ -29,7 +29,7 @@ export class LoginComponent implements OnInit {
     this.assetsService.getLogo().subscribe(url => {
       this.logoUrl = url;
     });
-  
+
   }
 
   togglePasswordVisibility(): void {
@@ -49,9 +49,25 @@ export class LoginComponent implements OnInit {
     ).subscribe({
       next: (res) => {
         this.isSubmitting = false;
-        this.router.navigate(['/app-home']);   // or /product-list
-        this.toast.success("Login Success")
-        this.toast.success("Welcome to Dominus")
+
+        this.authService.getMyProfile().subscribe({
+          next: (profileRes) => {
+            const role = profileRes?.data?.role?.toLowerCase();
+
+            this.toast.success("Login Success");
+            this.toast.success("Welcome to Dominus");
+
+            if (role === 'admin') {
+              this.router.navigate(['/admin/dashboard']);
+            } else {
+              this.router.navigate(['/app-home']);
+            }
+          },
+        })
+
+        // this.router.navigate(['/app-home']);   // or /product-list
+        // this.toast.success("Login Success")
+        // this.toast.success("Welcome to Dominus")
         // The auth state will be updated by the service
 
       },

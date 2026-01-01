@@ -3,8 +3,11 @@ import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { Product } from 'src/app/core/models/product.model';
+import { CartService } from 'src/app/core/services/cart.service';
 import { ProductService } from 'src/app/core/services/product.service';
 import { ToastService } from 'src/app/core/services/toast.service';
+import { WishlistService } from 'src/app/core/services/wishlist.service';
+import { WishlistBadgeService } from 'src/app/core/services/wishlistBadge.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -15,134 +18,136 @@ export class ProductDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private productService = inject(ProductService);
-  private http = inject(HttpClient)
   private toast = inject(ToastService);
+  private cartService = inject(CartService);
+  private wishlistService = inject(WishlistService);
+  private wishlistBadge = inject(WishlistBadgeService);
+
 
   product: Product | null = null;
   selectedImageIndex = 0;
   isLoading = true;
-  showRelatedProducts: boolean = true;
+showRelatedProducts= false
+  wishlistProductIds = new Set<number>();
+  cartProductMap = new Map<number, number>();
+  cartQuantities = new Map<number, number>();
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
-      const productId = params.get('id');
-      if (productId) {
-        this.loadProduct(productId);
+      const id = Number(params.get('id'));
+      if (id) {
+        this.loadProduct(id);
       }
     });
+
+    this.loadWishlist();
+    this.loadCartStatus();
   }
 
-  loadProduct(productId: string) {
-    const id = Number(productId);
-
+  loadProduct(id: number) {
     this.productService.getAllProducts().subscribe({
       next: (products) => {
         this.product = products.find(p => p.id === id) ?? null;
         this.isLoading = false;
 
         if (!this.product) {
-          this.toast.error('Product not found');
+          this.toast.error("Product not found");
           this.router.navigate(['/products']);
         }
       },
       error: () => {
-        this.toast.error('Error loading product');
+        this.toast.error("Failed to load product");
         this.isLoading = false;
       }
     });
   }
 
+  loadWishlist() {
+    this.wishlistService.getMyWishlist().subscribe({
+      next: (res: any) => {
+        if (res.statusCode === 200 && res.data?.items) {
+          this.wishlistProductIds = new Set(
+            res.data.items.map((x: any) => x.productId)
+          );
+        } else {
+          this.wishlistProductIds.clear();
+        }
+
+        this.wishlistBadge.updatewishlistCount(this.wishlistProductIds.size);
+      },
+      error: () => this.wishlistProductIds.clear()
+    });
+  }
+
+  loadCartStatus() {
+    this.cartService.getMyCart().subscribe(res => {
+      this.cartProductMap.clear();
+      this.cartQuantities.clear();
+
+      if (res?.data?.items) {
+        res.data.items.forEach((i: any) => {
+          this.cartProductMap.set(i.productId, i.id);
+          this.cartQuantities.set(i.productId, i.quantity);
+        });
+      }
+    });
+  }
 
   selectImage(index: number) {
     this.selectedImageIndex = index;
   }
 
   addToCart(product: Product) {
-    const fetchUserData = JSON.parse(localStorage.getItem("currentUser") || '{}');
-    if (!fetchUserData.id) {
-      console.error("User not logged in");
-      this.toast.error("User not logged in")
+    if (product.currentStock <= 0) {
+      this.toast.info("Out of stock");
+      return;
+    }
+
+    const cartItemId = this.cartProductMap.get(product.id);
+
+    if (cartItemId) {
+      const currentQty = this.cartQuantities.get(product.id) ?? 1;
+      const nextQty = currentQty + 1;
+
+      if (nextQty > product.currentStock) {
+        this.toast.warning("Stock limit reached");
+        return;
+      }
+
+      this.cartService.updateItem(cartItemId, nextQty).subscribe(() => {
+        this.toast.success("Quantity updated");
+        this.loadCartStatus();
+      });
 
       return;
     }
 
-    console.log('Added to cart:', product);
-    this.http.get<any>(`http://localhost:3000/users/${fetchUserData.id}`)
-      .pipe(
-        switchMap((user) => {
-          // Check if product already exists in cart
-          const existingItem = user.cart?.find((item: any) => item.productId === product.id);
-
-          if (existingItem) {
-            console.log('⚠️ Product already in cart');
-            this.toast.info("⚠️ Product already in cart")
-
-            return this.http.get<any>(`http://localhost:3000/users/${fetchUserData.id}`);
-          }
-
-          const newCartItem = {
-            productId: product.id,
-            // productName: product.name,
-          };
-          console.log('Added to cart:', product);
-          this.toast.success("Added to Cart")
-          const updatedCart = [...(user.cart || []), newCartItem];
-          return this.http.patch(`http://localhost:3000/users/${fetchUserData.id}`, { cart: updatedCart });
-        })
-      )
-      .subscribe({
-        next: (res) => console.log('🛒 Cart updated successfully:', res),
-        error: (err) => console.error('❌ Error updating cart:', err),
-      });
+    this.cartService.addToCart(product.id, 1).subscribe(() => {
+      this.toast.success("Added to cart");
+      this.loadCartStatus();
+    });
   }
 
-  addTowishlist(product: Product) {
-    const fetchUserData = JSON.parse(localStorage.getItem("currentUser") || '{}');
-    if (!fetchUserData.id) {
-      console.error("User not logged in");
-      this.toast.error("User not logged in")
+  toggleWishlist(product: Product) {
+    if (!product?.id) return;
 
-      return;
-    }
-
-    console.log('Added to wishlist:', product);
-    this.http.get<any>(`http://localhost:3000/users/${fetchUserData.id}`)
-      .pipe(
-        switchMap((user) => {
-          // Check if product already exists in wishlist
-          const existingItem = user.wishlist?.find((item: any) => item.productId === product.id);
-
-          if (existingItem) {
-            console.log('⚠️ Product already in wishlist');
-            this.toast.info("⚠️ Product already in wishlist")
-
-            // Optionally, you could show a toast/notification here
-            // Return the current user data without modification
-            return this.http.get<any>(`http://localhost:3000/users/${fetchUserData.id}`);
-          }
-
-          const newCartItem = {
-            productId: product.id,
-            // productName: product.name,
-          };
-          console.log('Added to wishlist:', product);
-          this.toast.success("Added to wishlist")
-
-          const updatedCart = [...(user.wishlist || []), newCartItem];
-          return this.http.patch(`http://localhost:3000/users/${fetchUserData.id}`, { wishlist: updatedCart });
-        })
-      )
-      .subscribe({
-        next: (res) => {
-          console.log('🛒 Cart updated successfully:', res),
-            this.toast.success("🛒 Cart updated successfully:", res)
-        },
-        error: (err) => {
-          console.error('❌ Error updating cart:', err)
-            ,
-            this.toast.success("❌ Error updating cart:", err)
+    this.wishlistService.toggle(product.id).subscribe({
+      next: (res: any) => {
+        if (res.statusCode === 200) {
+          this.toast.success("Added to Wishlist");
+          this.wishlistProductIds.add(product.id);
         }
-      });
+        else if (res.statusCode === 201) {
+          this.toast.info("Removed from Wishlist");
+          this.wishlistProductIds.delete(product.id);
+        }
+
+        this.wishlistBadge.updatewishlistCount(this.wishlistProductIds.size);
+      },
+      error: () => this.toast.error("Wishlist failed")
+    });
   }
+
+
 
   goBack() {
     this.router.navigate(['/products']);

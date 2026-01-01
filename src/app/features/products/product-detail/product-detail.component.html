@@ -31,7 +31,7 @@
             </button>
 
             <!-- Filters -->
-            <button 
+            <button
               class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
               <i class="fa-solid fa-filter text-purple-400"></i>
               <span>Related.Pd</span>
@@ -46,7 +46,7 @@
 
 
       <!-- Right Content: Products Grid (9/12) -->
-            <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
+      <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
 
         <!-- Loading State -->
         <div *ngIf="isLoading" class="min-h-screen flex items-center justify-center">
@@ -89,7 +89,7 @@
             <div class="space-y-6">
               <!-- Category Badge -->
               <div class="text-xs bg-black text-white px-3 py-1 rounded-full inline-block">
-                {{ product.category | titlecase }}
+                {{ product.categoryName | titlecase }}
               </div>
 
               <!-- Product Name -->
@@ -115,11 +115,11 @@
               </div>
 
               <!-- Colors -->
-              <div *ngIf="product.colors && product.colors.length > 0" class="space-y-2">
+              <div *ngIf="product.availableColors?.length">
                 <h3 class="font-semibold text-black">Colors</h3>
                 <div class="flex gap-2">
-                  <div *ngFor="let color of product.colors" class="w-8 h-8 rounded-full border border-gray-300"
-                    [style.background-color]="color.toLowerCase()" [title]="color">
+                  <div *ngFor="let color of product.availableColors" class="w-7 h-7 rounded-full border"
+                    [style.backgroundColor]="color">
                   </div>
                 </div>
               </div>
@@ -131,21 +131,23 @@
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex gap-4 pt-4">
-                <button (click)="addToCart(product)" [disabled]="product.currentStock === 0" [class]="'flex-1 py-3 px-6 rounded-full font-semibold transition-all duration-200 ' +
-                          (product.currentStock === 0 ? 
-                           'bg-gray-300 text-gray-500 cursor-not-allowed' : 
-                           'bg-black text-white hover:bg-gray-800')">
-                  <i class="fa-solid fa-cart-plus mr-2"></i>
-                  {{ product.currentStock === 0 ? 'Out of Stock' : 'Add to Cart' }}
+              <div class="flex gap-3">
+                <button (click)="addToCart(product)" [disabled]="product.currentStock === 0"
+                  class="flex-1 py-3 rounded-full font-semibold" [class]="product.currentStock === 0 ?
+                        'bg-gray-300 text-gray-500' :
+                        'bg-black text-white hover:bg-gray-800'">
+                  Add To Cart
                 </button>
 
-                <button (click)="addTowishlist(product)"
-                  class="fill-black p-3 border border-gray-300 rounded-full hover:bg-gray-50">
-                  <i class="fa-regular fa-heart text-yellow-400 "></i>
+                <button (click)="toggleWishlist(product)"
+                  class="w-12 h-12 border rounded-full flex justify-center items-center" [ngClass]="wishlistProductIds.has(product.id)
+                          ? 'bg-red-50 border-red-300'
+                          : 'border-gray-300'">
+                  <i class="fa-solid fa-heart"
+                    [ngClass]="wishlistProductIds.has(product.id) ? 'text-red-500' : 'text-gray-600'">
+                  </i>
                 </button>
               </div>
-
 
             </div>
           </div>

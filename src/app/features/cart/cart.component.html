@@ -116,17 +116,16 @@
 
                   </div>
 
-                  <!-- Remove -->
-                  <!-- <button (click)="removeFromCart(item.product.id)"
-                    class="text-red-500 hover:text-red-600 transition-colors text-sm" title="Remove Item">
-                    <i class="fa-solid fa-trash"></i>
-                  </button> -->
+                  <button (click)="removeFromCart(item.id)"
+                    class="text-black-50 hover:text-red-600 transition-colors text-sm" title="Remove Item">
+                    <i class="fa-regular fa-trash-can fa-shake"></i> </button>
+
                 </div>
               </div>
 
               <!-- Buy Now -->
               <button (click)="buyProduct(item.product)"
-                class="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded-full text-sm transition-all">
+                class="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded-full text-sm transition-all fa-fade">
                 Buy Now
               </button>
             </div>

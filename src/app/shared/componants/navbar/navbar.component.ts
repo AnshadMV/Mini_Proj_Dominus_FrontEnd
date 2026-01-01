@@ -6,6 +6,9 @@ import { ToastService } from 'src/app/core/services/toast.service';
 import { WishlistBadgeService } from 'src/app/core/services/wishlistBadge.service';
 import { SearchService } from 'src/app/core/services/navbar_search.service';
 import { AuthService } from 'src/app/core/services/auth.service';
+import { CartService } from 'src/app/core/services/cart.service';
+import { WishlistService } from 'src/app/core/services/wishlist.service';
+
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
@@ -33,7 +36,16 @@ export class NavbarComponent implements OnInit {
     { label: 'Contact Us', route: '/app-contact-us' },
     { label: 'About Us', route: '/app-about' },
   ];
-  constructor(private router: Router, private auth: AuthService, private toast: ToastService, private cartBadgeService: CartBadgeService, private http: HttpClient, private WishlistBadgeService: WishlistBadgeService, private searchService: SearchService) { }
+  constructor(
+    private router: Router,
+    private auth: AuthService,
+    private toast: ToastService,
+    private cartBadgeService: CartBadgeService,
+    private http: HttpClient,
+    private cartService: CartService,
+    private wishlistService: WishlistService,
+    private WishlistBadgeService: WishlistBadgeService,
+    private searchService: SearchService) { }
   ngOnInit() {
     this.auth.getMyProfile().subscribe({
       next: (res) => {
@@ -46,9 +58,7 @@ export class NavbarComponent implements OnInit {
       }
     });
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || '{}');
-    this.role = currentUser.role || '';  // ✅ Dynamic role
-
-    // ✅ Load counts ONCE (no loop!)
+    this.role = currentUser.role || '';
     this.loadCartCount();
     this.loadwishlistCount();
 
@@ -63,76 +73,45 @@ export class NavbarComponent implements OnInit {
     });
   }
 
-  // In navbar.component.ts - navigation method
-  // ✅ FIXED
   navigation() {
     console.log('=== ADMIN NAVIGATION DEBUG ===');
-
-    // Get fresh user data from localStorage
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    console.log('Current User:', currentUser);
-    console.log('User Role:', currentUser.role);
-
-    if (currentUser && currentUser.role === 'admin') {
-      console.log('User is admin, navigating to admin dashboard...');
-
-      this.router.navigate(['/admin']).then(success => {
-        console.log('Navigation success:', success);
-        if (success) {
-          this.closeProfileDropdown();
-        } else {
-          console.log('Navigation failed silently');
-          this.toast.error('Cannot access admin panel');
-        }
-      }).catch(error => {
-        console.error('Navigation error:', error);
-        this.toast.error('Error accessing admin panel');
-      });
+    if (this.userProfile?.role?.toLowerCase() === 'admin') {
+      this.router.navigate(['/admin']);
+      this.closeProfileDropdown();
     } else {
-      console.log('User is NOT admin, access denied');
       this.toast.error('Admin access required');
-      // Optional: Redirect to home or show upgrade message
       this.router.navigate(['/app-home']);
     }
+
   }
 
   toggleModal() {
     this.isModalOpen = !this.isModalOpen;
   }
   loadCartCount() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const userId = currentUser?.id;
-
-    if (userId) {
-      this.http.get<any>(`http://localhost:3000/users/${userId}`)
-        .subscribe({
-          next: (user) => {
-            const cartLength = user?.cart?.length || 0;
-            this.cartBadgeService.updateCartCount(cartLength);
-          },
-          error: (err) => {
-            console.error('Error loading cart count:', err);
-          }
-        });
-    }
+    this.cartService.getMyCart().subscribe({
+      next: (res: any) => {
+        const count = res?.data?.items?.length || 0;
+        this.cartBadgeService.updateCartCount(count);
+      },
+      error: () => {
+        this.cartBadgeService.updateCartCount(0);
+      }
+    });
   }
+
   loadwishlistCount() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const userId = currentUser?.id;
-
-    if (userId) {
-      this.http.get<any>(`http://localhost:3000/users/${userId}`)
-        .subscribe({
-          next: (user) => {
-            const wishlistLength = user?.wishlist?.length || 0;
-            this.WishlistBadgeService.updatewishlistCount(wishlistLength);
-          },
-          error: (err) => {
-            console.error('Error loading cart count:', err);
-          }
-        });
-    }
+    this.wishlistService.getMyWishlist().subscribe({
+      next: (res: any) => {
+        const count = res?.data?.items?.length || 0;
+        this.WishlistBadgeService.updatewishlistCount(count);
+      },
+      error: () => {
+        this.WishlistBadgeService.updatewishlistCount(0);
+      }
+    });
   }
+
 
   @HostListener('window:scroll')
   onWindowScroll() {
@@ -155,6 +134,8 @@ export class NavbarComponent implements OnInit {
 
   closeProfileDropdown() {
     this.showProfileDropdown = false;
+  }
+  profileClicked() {
     this.router.navigate(['/app-profile']);
   }
   naviagteToOrder() {
@@ -190,7 +171,7 @@ export class NavbarComponent implements OnInit {
     this.searchService.setSearchTerm(term);
 
     // Navigate to product list if not already there and search is active
-    if (term.length > 0 && !this.router.url.includes('/app-products/product-list')) {
+    if (term.length > 0 && !this.router.url.includes('/products/product-list')) {
       this.router.navigate(['/products/product-list']);
     }
   }

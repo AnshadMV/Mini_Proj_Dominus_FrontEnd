@@ -5,6 +5,7 @@ export const environment = {
     PRODUCTURL: 'https://localhost:7121/api/Products',
     CATEGORYURL: 'https://localhost:7121/api/Categories',
     CARTURL: 'https://localhost:7121/api/Cart',
+    WISH_URL: 'https://localhost:7121/api/Wishlist',
     USERURL: 'https://localhost:7121/api/Users/Admin/GetAll',
     AUTH: 'https://localhost:7121/api/Auth',
     USERS: 'https://localhost:7121/api/Users',

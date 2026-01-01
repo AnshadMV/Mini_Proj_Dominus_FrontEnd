@@ -1,10 +1,10 @@
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { Category } from 'src/app/core/models/category.model';
 import { ProductService } from 'src/app/core/services/product.service';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { CategoriesService } from 'src/app/core/services/categories.service';
+import { CategoriesService } from 'src/app/core/services/base_services/categories.service';
+import { Category } from 'src/app/core/models/base-models/Category.model';
 
 @Component({
   selector: 'app-admin-product-categories',
@@ -13,7 +13,7 @@ import { CategoriesService } from 'src/app/core/services/categories.service';
 })
 export class AdminProductCategoriesComponent implements OnInit {
   categories: Category[] = []
-  openMenuId: string | null = null;
+  openMenuId: number | null = null;
   showCategoryModal: boolean = false;
   totalCategories: number = 0
   activeCategories: number = 0
@@ -50,9 +50,10 @@ export class AdminProductCategoriesComponent implements OnInit {
     });
   }
 
-  menuOption(id: string) {
+  menuOption(id: number) {
     this.openMenuId = this.openMenuId === id ? null : id;
   }
+
 
   openAddCategoryModal() {
     this.modalMode = 'add';
@@ -81,61 +82,44 @@ export class AdminProductCategoriesComponent implements OnInit {
   }
 
   handleSave(categoryData: Partial<Category>) {
-    console.log('Saving category:', categoryData); // Debug log
-    
+
     if (this.modalMode === 'add') {
-      // Generate a simple ID for new category
-      const newCategory = {
-        ...categoryData,
-        id: this.generateCategoryId(categoryData.name as string)
-      };
-      
-      this.categoriesService.addCategory(newCategory).subscribe({
+
+      this.categoriesService.addCategory(categoryData).subscribe({
         next: () => {
           this.toast.success('Category added successfully');
           this.closeModal();
           this.loadCategories();
         },
-        error: (error) => {
-          console.error('Error adding category:', error);
-          this.toast.error('Error adding category');
-        }
+        error: () => this.toast.error('Error adding category')
       });
-    } else if (this.modalMode === 'edit' && this.selectedCategory?.id) {
-      const updatedCategory = {
-        ...categoryData,
-        id: this.selectedCategory.id // Ensure ID is preserved
-      };
-      
-      this.categoriesService.updateCategory(this.selectedCategory.id, updatedCategory).subscribe({
+
+    } else if (this.modalMode === 'edit' && this.selectedCategory) {
+
+      this.categoriesService.updateCategory(this.selectedCategory.id, categoryData).subscribe({
         next: () => {
           this.toast.success('Category updated successfully');
           this.closeModal();
           this.loadCategories();
         },
-        error: (error) => {
-          console.error('Error updating category:', error);
-          this.toast.error('Error updating category');
-        }
+        error: () => this.toast.error('Error updating category')
       });
+
     }
   }
 
-  handleDelete(categoryId: string) {
+
+  handleDelete(categoryId: number) {
     this.categoriesService.deleteCategory(categoryId).subscribe({
       next: () => {
         this.toast.success('Category deleted successfully');
         this.closeModal();
         this.loadCategories();
       },
-      error: (error) => {
-        console.error('Error deleting category:', error);
-        this.toast.error('Error deleting category');
-      }
+      error: () => this.toast.error('Error deleting category')
     });
   }
 
-  private generateCategoryId(name: string): string {
-    return name.toLowerCase().replace(/\s+/g, '-');
-  }
+
+
 }

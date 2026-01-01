@@ -109,8 +109,7 @@
 </div>
 
 
-<!-- Reusable Modal for Categories -->
-<app-admin-modal 
+<app-admin-modals
   [isOpen]="isModalOpen" 
   [mode]="modalMode" 
   [entityType]="'category'"
@@ -118,4 +117,4 @@
   (close)="closeModal()"
   (save)="handleSave($event)"
   (confirmDelete)="handleDelete($event)">
-</app-admin-modal>
+</app-admin-modals> 

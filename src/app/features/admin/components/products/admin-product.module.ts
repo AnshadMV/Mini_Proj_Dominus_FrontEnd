@@ -8,13 +8,20 @@ import { AdminProductCategoriesComponent } from './admin-product-categories/admi
 import { AdminProductRoutingModule } from './admin-product-routing.module';
 import { AdminModalComponent } from 'src/app/shared/componants/admin-modal/admin-modal.component';
 import { AdminProductFormComponent } from './admin-product-form/admin-product-form.component';
+import { AdminModalsComponent } from 'src/app/shared/componants/admin_modals/admin-modals.component';
 
 @NgModule({
   declarations: [
     AdminProductlistComponent,
     AdminProductFormComponent,
     AdminProductCategoriesComponent,
-    AdminModalComponent
+    
+    AdminModalsComponent   ,
+
+
+
+
+    AdminModalComponent,
   ],
   imports: [
     CommonModule,

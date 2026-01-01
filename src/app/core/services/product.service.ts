@@ -14,13 +14,9 @@ import { environment } from 'src/environments/environment';
 export class ProductService {
 
     private apiUrl = website_constants.API.PRODUCTURL;
-    // private categoryUrl = 'http://localhost:3000/categories';
     private prod_url = environment.API.PRODUCTURL;
     private categoryUrl = environment.API.CATEGORYURL;
-
-
     constructor(private http: HttpClient) { }
-
     getAllProducts(): Observable<Product[]> {
         return this.http.get<any>(`${this.prod_url}/GetAll`).pipe(
             map(res => res.data)
@@ -29,40 +25,19 @@ export class ProductService {
     getCategories(): Observable<Category[]> {
         return this.http.get<Category[]>(`${this.categoryUrl}/Get_All`);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    filterProducts(params: any) {
+        return this.http.get<any>(`${this.prod_url}/Filter_Sort`, { params })
+            .pipe(map(res => res.data));
+    }
 
     getProducts(): Observable<Product[]> {
         return this.http.get<Product[]>(this.apiUrl);
     }
     getTopProducts(limit: number): Observable<Product[]> {
         return this.http.get<Product[]>(this.apiUrl + '?_limit=' + limit);
+    }
+    getAllColors() {
+        return this.http.get<any>(`${environment.API.BASE_URL}/Colors/GetAll`);
     }
 
     getProductById(id: number): Observable<Product | undefined> {

@@ -9,6 +9,9 @@ import { Product } from 'src/app/core/models/product.model';
 import { Category } from 'src/app/core/models/category.model';
 import { website_constants } from 'src/app/core/constants/app.constant';
 import { CartService } from 'src/app/core/services/cart.service';
+import { WishlistService } from 'src/app/core/services/wishlist.service';
+import { WishlistBadgeService } from 'src/app/core/services/wishlistBadge.service';
+
 @Component({
     selector: 'app-product-list',
     templateUrl: 'product-list.component.html',
@@ -22,42 +25,60 @@ export class ProductListComponent implements OnInit {
     private toast = inject(ToastService)
     private searchService = inject(SearchService);
     private cartService = inject(CartService);
+    private wishlistService = inject(WishlistService);
+    private wishlistBadge = inject(WishlistBadgeService);
 
 
     products: Product[] = [];
     filteredProducts: Product[] = [];
     categories: Category[] = [];
     isLoading = true;
+
+
+    //Filter From backend
     searchTerm: string = '';
     selectedCategory: string = 'all';
+    priceRange: [number, number] = [0, 100000];
+    showOnlyPopular: boolean = false;
+    showOnlyInStock: boolean = false;
+
+    page = 1;
+    pageSize = 20;
     sortBy: string = 'name';
+    descending = true;
+
+
     sortDirection: 'asc' | 'desc' = 'asc';
     showFilters: boolean = false;
     private searchSubscription!: Subscription;
     private usersUrl = website_constants.API.USERURL;
     userId: string | null = null;
     isBlockedUser: boolean = false;
-    priceRange: [number, number] = [0, 100000];
     minPrice: number = 0;
     maxPrice: number = 1000000;
-    selectedColors: string[] = [];
-    availableColors: string[] = [];
-    showOnlyPopular: boolean = false;
-    showOnlyInStock: boolean = false;
-    UserDataforChecking = JSON.parse(localStorage.getItem("currentUser") || '{}');
+    availableColors: { id: string, name: string }[] = [];
+    selectedColors: string[] = []; // will store colorIds
+
+    // UserDataforChecking = JSON.parse(localStorage.getItem("currentUser") || '{}');
     currentPage: number = 1;
     itemsPerPage: number = 8;
+    wishlistProductIds = new Set<number>();
+    cartProductMap = new Map<number, number>();
+    cartQuantities = new Map<number, number>();
 
     ngOnInit() {
         this.loadProducts();
         this.loadCategories();
+        this.loadColors();
+        this.loadCartStatus();
+        this.loadWishlist();
 
-        // global searching system (from navbar)
         this.searchSubscription = this.searchService.searchTerm$.subscribe(term => {
             this.searchTerm = term;
             this.applyFilters();
         });
     }
+
     ngOnDestroy() {
         if (this.searchSubscription) {
             this.searchSubscription.unsubscribe();
@@ -67,16 +88,40 @@ export class ProductListComponent implements OnInit {
     loadProducts() {
         this.productService.getAllProducts().subscribe({
             next: (products) => {
+                console.log("🔵 RAW PRODUCTS FROM API:", products);
+                //  products.forEach(p => {
+                //         console.log(
+                //           `Product: ${p.name} (ID: ${p.id})`,
+                //           "Colors =>",
+                //           p.availableColors
+                //         );
+                //       });
                 this.products = products;
                 this.filteredProducts = products;
+
+                // Price
+                this.minPrice = Math.min(...products.map(p => p.price));
+                this.maxPrice = Math.max(...products.map(p => p.price));
+                this.priceRange = [this.minPrice, this.maxPrice];
+
+                // Colors (flatten + unique)
+                // // const colorSet = new Set<string>();
+
+                // // products.forEach(p => {
+                // //     if (p.availableColors?.length) {
+                // //         p.availableColors.forEach((c: string) => colorSet.add(c));
+                // //     }
+                // // });
+
+                // this.availableColors = Array.from(colorSet);
+
                 this.isLoading = false;
             },
-            error: (error) => {
-                console.error('Error loading products:', error);
-                this.isLoading = false;
-            }
+            error: () => this.isLoading = false
         });
     }
+
+
     loadCategories() {
         this.productService.getCategories().subscribe({
             next: (categories) => {
@@ -89,52 +134,216 @@ export class ProductListComponent implements OnInit {
             }
         });
     }
-    initializeFilters(products: Product[]) {
-        // Initialize price range
-        const prices = products.map(p => p.price);
-        this.minPrice = Math.min(...prices);
-        this.maxPrice = Math.max(...prices);
-        this.priceRange = [this.minPrice, this.maxPrice];
+    loadColors() {
+        this.productService.getAllColors().subscribe({
+            next: (res: any) => {
+                this.availableColors = res.data.map((c: any) => ({
+                    id: c.id,
+                    name: c.name
+                }));
 
-        // Initialize available colors
-        const allColors = products.flatMap(p => p.colors || []);
-        this.availableColors = [...new Set(allColors)].filter(color => color).sort();
+                console.log("Colors Loaded", this.availableColors);
+            },
+            error: err => {
+                console.error("Failed to load colors", err);
+                this.availableColors = [];
+            }
+        });
     }
 
 
+    loadWishlist() {
+        this.wishlistService.getMyWishlist().subscribe({
+            next: (res: any) => {
+
+                if (res.statusCode === 200 && res.data?.items) {
+                    this.wishlistProductIds = new Set(
+                        res.data.items.map((x: any) => x.productId)
+                    );
+                } else {
+                    this.wishlistProductIds.clear();
+                }
+
+                this.wishlistBadge.updatewishlistCount(this.wishlistProductIds.size);
+            },
+            error: () => {
+                this.wishlistProductIds.clear();
+                this.wishlistBadge.updatewishlistCount(0);
+            }
+        });
+    }
+    loadCartStatus() {
+        this.cartService.getMyCart().subscribe(res => {
+            this.cartProductMap.clear();
+            this.cartQuantities.clear();
+
+            if (res?.data?.items) {
+                res.data.items.forEach((i: any) => {
+                    this.cartProductMap.set(i.productId, i.id);
+                    this.cartQuantities.set(i.productId, i.quantity);
+                });
+            }
+        });
+    }
+
+    addToCart(product: Product) {
+
+        if (product.currentStock <= 0) {
+            this.toast.info("Out of stock");
+            return;
+        }
+
+        const cartItemId = this.cartProductMap.get(product.id);
+
+        // Already in cart -> increase qty
+        if (cartItemId) {
+            const currentQty = this.cartQuantities.get(product.id) ?? 1;
+            const nextQty = currentQty + 1;
+
+            if (nextQty > product.currentStock) {
+                this.toast.warning("Stock limit reached");
+                return;
+            }
+
+            this.cartService.updateItem(cartItemId, nextQty).subscribe(() => {
+                this.toast.success("Quantity updated");
+                this.loadCartStatus();
+            });
+
+            return;
+        }
+
+        // Not in cart -> add
+        this.cartService.addToCart(product.id, 1).subscribe(() => {
+            this.toast.success("Added to cart");
+            this.loadCartStatus();
+        });
+    }
 
 
-    applyFilters() {
-        this.filteredProducts = this.products.filter(product => {
-            // Search term filter
-            const matchesSearch = !this.searchTerm ||
-                product.name.toLowerCase().includes(this.searchTerm.toLowerCase());
+    addTowishlist(product: Product) {
 
-            // Category filter
-            const matchesCategory = this.selectedCategory === 'all' ||
-                product.category === this.selectedCategory;
+        if (!product?.id) {
+            this.toast.error("Invalid product");
+            return;
+        }
 
-            // Price range filter
-            const matchesPrice = product.price >= this.priceRange[0] &&
-                product.price <= this.priceRange[1];
+        this.wishlistService.toggle(product.id).subscribe({
+            next: (res: any) => {
 
-            // Color filter
-            const matchesColor = this.selectedColors.length === 0 ||
-                (product.colors && product.colors.some(color =>
-                    this.selectedColors.includes(color)));
+                if (res.statusCode === 200) {
+                    this.toast.success("Added to Wishlist");
+                    this.wishlistProductIds.add(product.id);
+                }
+                else if (res.statusCode === 201) {
+                    this.toast.info("Removed from Wishlist");
+                    this.wishlistProductIds.delete(product.id);
+                }
 
-            // Popular filter
-            const matchesPopular = !this.showOnlyPopular || product.topSelling;
-
-            // Stock filter
-            const matchesStock = !this.showOnlyInStock || product.currentStock > 0;
-
-            return matchesSearch && matchesCategory && matchesPrice &&
-                matchesColor && matchesPopular && matchesStock;
+                this.wishlistBadge.updatewishlistCount(this.wishlistProductIds.size);
+            },
+            error: (err) => {
+                this.toast.error(err.error?.message || "Failed to update wishlist");
+            }
         });
 
-        this.sortProducts();
     }
+
+    isInCart(productId: number): boolean {
+        return this.cartProductMap.has(productId);
+    }
+
+    initializeFilters(products: Product[]) {
+    }
+
+    applyFilters() {
+        const params: any = {
+            page: this.currentPage,
+            pageSize: this.itemsPerPage,
+            sortBy: this.sortBy,
+            descending: this.sortDirection === 'desc',
+            isActive: true 
+        };
+
+        if (this.searchTerm?.trim()) params.name = this.searchTerm.trim();
+        if (this.selectedCategory !== 'all') params.categoryId = this.selectedCategory;
+
+        params.minPrice = this.priceRange[0];
+        params.maxPrice = this.priceRange[1];
+
+        if (this.selectedColors.length > 0)
+            params.ColorId = this.selectedColors[0];
+
+        if (this.showOnlyInStock)
+            params.inStock = true;
+
+        this.isLoading = true;
+
+        this.productService.filterProducts(params).subscribe({
+            next: res => {
+                let result = res.items || res;
+
+                if (this.showOnlyPopular)
+                    result = result.filter((p: any) => p.topSelling === true);
+
+                this.filteredProducts = result;
+                this.isLoading = false;
+            },
+            error: () => {
+                this.filteredProducts = [];
+                this.isLoading = false;
+            }
+        });
+    }
+
+
+
+
+
+
+    onSearchChange() {
+        this.currentPage = 1;
+        this.applyFilters();
+    }
+
+    onCategoryChange(categoryId: string) {
+        this.selectedCategory = categoryId;
+        this.currentPage = 1;
+        this.applyFilters();
+    }
+
+    onPriceRangeChange() {
+        this.applyFilters();
+    }
+
+    toggleColorFilter(colorId: string) {
+        if (this.selectedColors.includes(colorId)) {
+            this.selectedColors = this.selectedColors.filter(c => c !== colorId);
+        } else {
+            this.selectedColors = [colorId]; // ONLY ONE SUPPORTED
+        }
+
+        this.applyFilters();
+    }
+
+
+
+
+    togglePopularFilter() {
+        this.showOnlyPopular = !this.showOnlyPopular;
+        this.applyFilters();
+    }
+
+    toggleInStockFilter() {
+        this.showOnlyInStock = !this.showOnlyInStock;
+        this.applyFilters();
+    }
+
+
+    toggleFilters() {
+        this.showFilters = !this.showFilters;
+    }
+
 
 
 
@@ -147,42 +356,6 @@ export class ProductListComponent implements OnInit {
             return 0;
         });
     }
-
-    onSearchChange() { this.applyFilters(); }
-
-    onCategoryChange(categoryId: string) {
-        this.selectedCategory = categoryId;
-        this.applyFilters();
-    }
-
-    onPriceRangeChange() {
-        this.applyFilters();
-    }
-
-    toggleColorFilter(color: string) {
-        const index = this.selectedColors.indexOf(color);
-        if (index > -1) {
-            this.selectedColors.splice(index, 1);
-        } else {
-            this.selectedColors.push(color);
-        }
-        this.applyFilters();
-    }
-
-    togglePopularFilter() {
-        this.showOnlyPopular = !this.showOnlyPopular;
-        this.applyFilters();
-    }
-
-    toggleInStockFilter() {
-        this.showOnlyInStock = !this.showOnlyInStock;
-        this.applyFilters();
-    }
-
-    toggleFilters() {
-        this.showFilters = !this.showFilters;
-    }
-
     onSortChange(sortBy: string) {
         if (this.sortBy === sortBy) {
             this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -232,75 +405,17 @@ export class ProductListComponent implements OnInit {
     //     this.router.navigate(['/product', product.slug || product.id]);
     // }
 
-    addToCart(product: Product) {
-        if (product.currentStock <= 0) {
-            this.toast.info("Out of stock");
-            return;
-        }
-
-        this.cartService.addToCart(product.id, 1).subscribe({
-            next: () => this.toast.success("Added to cart"),
-            error: (err) =>
-                this.toast.error(err.error?.message || "Failed to add to cart")
-        });
-    }
 
 
 
 
-    addTowishlist(product: Product) {
-        const fetchUserData = JSON.parse(localStorage.getItem("currentUser") || '{}');
-        if (!fetchUserData.id) {
-            console.error("User not logged in");
-            this.toast.error("User not logged in")
 
-            return;
-        }
 
-        console.log('Added to wishlist:', product);
-        this.http.get<any>(`http://localhost:3000/users/${fetchUserData.id}`)
-            .pipe(
-                switchMap((user) => {
-                    // Check if product already exists in wishlist
-                    const existingItem = user.wishlist?.find((item: any) => item.productId === product.id);
-
-                    if (existingItem) {
-                        console.log('⚠️ Product already in wishlist');
-                        this.toast.info("⚠️ Product already in wishlist")
-
-                        // Optionally, you could show a toast/notification here
-                        // Return the current user data without modification
-                        return this.http.get<any>(`http://localhost:3000/users/${fetchUserData.id}`);
-                    }
-
-                    const newCartItem = {
-                        productId: product.id,
-                        // productName: product.name,
-                    };
-                    console.log('Added to wishlist:', product);
-                    this.toast.success("Added to wishlist")
-
-                    const updatedCart = [...(user.wishlist || []), newCartItem];
-                    return this.http.patch(`http://localhost:3000/users/${fetchUserData.id}`, { wishlist: updatedCart });
-                })
-            )
-            .subscribe({
-                next: (res) => {
-                    console.log('🛒 Cart updated successfully:', res),
-                        this.toast.success("🛒 Cart updated successfully:", res)
-                },
-                error: (err) => {
-                    console.error('❌ Error updating cart:', err)
-                        ,
-                        this.toast.success("❌ Error updating cart:", err)
-                }
-            });
-    }
 
 
     viewProduct(product: Product) {
-        const user = JSON.parse(localStorage.getItem("currentUser") || '{}');
-        this.userId = user?.id || null;
+        // const user = JSON.parse(localStorage.getItem("currentUser") || '{}');
+        // this.userId = user?.id || null;
 
         if (product.currentStock <= 0) {
             this.toast.info("⚠️ Out of currentStock");
@@ -348,9 +463,8 @@ export class ProductListComponent implements OnInit {
         this.selectedColors = [];
         this.showOnlyPopular = false;
         this.showOnlyInStock = false;
-        this.sortBy = 'name';
-        this.sortDirection = 'asc';
         this.applyFilters();
     }
+
 
 }

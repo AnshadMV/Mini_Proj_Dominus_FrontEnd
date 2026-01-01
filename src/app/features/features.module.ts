@@ -1,7 +1,4 @@
 import { NgModule } from '@angular/core';
-// import { LoginComponent } from './features/auth/login/login.component';
-// import { RegisterComponent } from './features/auth/register/register.component';
-// import { ButtonComponent } from './shared/componants/button/button.component';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';

@@ -95,9 +95,9 @@ export class CartComponent implements OnInit {
 
   decrement(item: any) {
 
-    if (item.quantity <= 1) 
+    if (item.quantity <= 1)
       return this.toast.error("At least one needed in Cart");
-    
+
     this.cartService
       .updateItem(item.id, item.quantity - 1)
       .subscribe(() => this.loadCartItems());
@@ -109,6 +109,7 @@ export class CartComponent implements OnInit {
       this.loadCartItems();
     });
   }
+
 
   buyProduct(product: any) {
     this.router.navigate(['/products/product-buy'], {

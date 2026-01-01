@@ -78,24 +78,25 @@
       <div *ngIf="showProfileDropdown"
         class="absolute right-0 mt-2 w-48 rounded-lg shadow-lg py-2 z-50 bg-white/50 backdrop-blur-md border border-white/20 text-black">
         <a class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition-colors"
-          (click)="closeProfileDropdown()">
+          (click)="profileClicked()">
           <i class="fa-solid fa-user text-sm"></i>
           <span>Profile</span>
         </a>
 
-        <a routerLink="/app-orders" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition-colors"
+        <a *ngIf="userProfile?.role?.toLowerCase() === 'user'"  routerLink="/app-orders" class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition-colors"
           (click)="naviagteToOrder()">
           <i class="fa-solid fa-bag-shopping text-sm"></i>
           <span>Orders</span>
         </a>
-        <div *ngIf="userProfile?.Id.Role=== 'admin'" class="border-t mt-2 pt-2">
+        <div *ngIf="userProfile?.role?.toLowerCase() === 'admin'" class="border-t mt-2 pt-2">
           <a (click)="navigation()"
             class="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition-colors text-blue-600"
-            (click)="closeProfileDropdown()">
+            >
             <i class="fa-solid fa-cog text-sm"></i>
             <span>Admin Panel</span>
           </a>
         </div>
+
         <hr class="my-2" />
 
         <button (click)="handleLogout()"

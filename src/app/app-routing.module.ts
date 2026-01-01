@@ -12,6 +12,7 @@ import { OrdersComponent } from './features/orders/orders.component';
 import { ContactUsComponent } from './features/contact-us/contact-us.component';
 import { PublicGuard } from './core/guards/public.guard';
 import { AuthGuard } from './core/guards/auth.guard';
+import { AdminGuard } from './core/guards/admin.guard';
 // import { PublicGuard } from './core/guards/public.guard';
 
 const routes: Routes = [
@@ -78,7 +79,7 @@ const routes: Routes = [
     path: 'admin',
     loadChildren: () =>
       import('./features/admin/admin.module').then(m => m.AdminModule),
-    // canActivate: [AuthGuard]
+    canActivate: [AdminGuard]
   },
 
   { path: '', redirectTo: '/app-home', pathMatch: 'full' },
