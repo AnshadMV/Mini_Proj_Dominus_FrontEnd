@@ -1,2 +1,4 @@
 # Angular cache
 .angular/cache/
+.angular/
+dist/
