@@ -1,30 +1,7 @@
-# Angular build cache
-.angular/
-dist/
-out-tsc/
+# Ignore everything
+*
 
-# Node
-node_modules/
-
-# Environment files
-environment.ts
-environment.prod.ts
-src/environments/
-
-# Logs
-npm-debug.log
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-*.log
-
-# IDE / Editor files
-.vscode/
-.idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Others
-package-lock.json
+# But NOT these
+!.gitignore
+!src/
+!src/**
