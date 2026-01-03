@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Category } from 'src/app/core/models/category.model';
+import { Category } from 'src/app/core/models/base-models/Category.model';
+import { Color } from 'src/app/core/models/base-models/Color.model';
+import { CategoriesService } from 'src/app/core/services/base_services/categories.service';
 import { ProductService } from 'src/app/core/services/product.service';
 import { ToastService } from 'src/app/core/services/toast.service';
 
@@ -11,36 +13,33 @@ import { ToastService } from 'src/app/core/services/toast.service';
   styleUrls: ['./admin-product-form.component.css']
 })
 export class AdminProductFormComponent implements OnInit {
-  productForm: FormGroup;
-  isEditMode = false;
-  isSubmitting = false;
-  productId: number| null=null ;
-  imagePreviews: string[] = [];
-  invalidImageUrls: number[] = [];
+
+  productForm!: FormGroup;
 
   categories: Category[] = [];
+  colors: any[] = [];
+  selectedColorIds: number[] = [];
+
+  isEditMode = false;
+  isSubmitting = false;
+  imagePreviews: string[] = [];
+  invalidImageUrls: number[] = [];
+  uploadedFiles: File[] = [];  // Store actual files
+  imageUrls: string[] = [];     // Store URLs separately
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
+    private categoriesService: CategoriesService,
     private toast: ToastService
-  ) {
-    this.productForm = this.createProductForm();
-  }
+  ) { }
 
   ngOnInit(): void {
-    // this.productId = this.route.snapshot.paramMap.get('id');
-    // this.isEditMode = !!this.productId;
-
-    // this.loadCategories();
-
-    // if (this.isEditMode && this.productId) {
-    //   this.loadProductData(this.productId);
-    // }
-
-    // console.log('AdminProductFormComponent initialized - Mode:', this.isEditMode ? 'Edit' : 'Create');
+    this.productForm = this.createProductForm();
+    this.loadCategories();
+    this.loadColors();
   }
 
   createProductForm(): FormGroup {
@@ -48,209 +47,156 @@ export class AdminProductFormComponent implements OnInit {
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
       price: [0, [Validators.required, Validators.min(0)]],
-      comparePrice: [0],
       currentStock: [0, [Validators.required, Validators.min(0)]],
-      category: ['', [Validators.required]],
+      category: ['', Validators.required],
       status: ['active'],
       topSelling: ['no'],
-      colors: [[], [Validators.required]],
+      colors: [[], Validators.required],
       warranty: ['']
     });
   }
 
   loadCategories(): void {
-    this.productService.getCategories().subscribe({
-      next: (categories) => {
-        this.categories = categories;
-      },
-      error: (error) => {
-        console.error('Error loading categories:', error);
-        this.toast.error("Error loading categories")
-      }
+    this.categoriesService.getCategories().subscribe({
+      next: res => this.categories = (res as Category[]).filter(c => c.isActive === true),
+      error: () => this.toast.error("Failed to load categories")
     });
   }
 
-  loadProductData(productId: number): void {
-    this.productService.getProductById(productId).subscribe({
-      next: (product) => {
-        if (product) {
-          this.productForm.patchValue({
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            currentStock: product.currentStock,
-            category: product.category,
-            status: product.inStock ? 'active' : 'inactive',
-            topSelling: product.topSelling ? 'yes' : 'no',
-            colors: product.colors || [],
-            warranty: product.warranty
-          });
-
-          this.imagePreviews = product.images || [];
-          // Validate existing images when loading product data
-          this.validateAllImageUrls();
-        }
+  loadColors() {
+    this.productService.getAllColors().subscribe({
+      next: res => {
+        // this.colors =res.data 
+        this.colors = (res.data as Color[]).filter(c => c.isActive === true)
       },
-      error: (error) => {
-        console.error('Error loading product:', error);
-        this.toast.error('Error loading product!');
-        alert('Error loading product data');
-      }
+      error: () => this.toast.error("Failed to load colors")
     });
   }
 
-  onSubmit(): void {
-    if (this.productForm.invalid) {
-      this.markFormGroupTouched();
-      return;
-    }
-
-    // Check if there are any invalid images
-    if (this.invalidImageUrls.length > 0) {
-      const proceed = confirm('Some images have invalid URLs. They will not be saved. Do you want to continue?');
-      if (!proceed) {
-        return;
-      }
-    }
-
-    this.isSubmitting = true;
-
-    const formData = this.productForm.value;
-
-    // Filter out invalid images before submitting
-    const validImages = this.imagePreviews.filter((_, index) => !this.isImageUrlInvalid(index));
-
-    const productData = {
-      name: formData.name,
-      price: Number(formData.price),
-      images: validImages,
-      inStock: formData.status === 'active',
-      colors: formData.colors.split(',').map((color: string) => color.trim()),
-      topSelling: formData.topSelling === 'yes',
-      currentStock: Number(formData.currentStock),
-      category: formData.category,
-      slug: this.generateSlug(formData.name),
-      warranty: formData.warranty,
-      description: formData.description
-    };
-
-    if (this.isEditMode && this.productId) {
-      // Update existing product
-      this.productService.updateProduct(this.productId, { ...productData, id: this.productId }).subscribe({
-        next: () => {
-          this.handleSuccess('Product updated successfully!');
-          this.toast.success('Product updated successfully!');
-        },
-        error: (error) => {
-          this.handleError(error, 'updating');
-        }
-      });
+  toggleColor(colorId: number) {
+    if (this.selectedColorIds.includes(colorId)) {
+      this.selectedColorIds = this.selectedColorIds.filter(c => c !== colorId);
     } else {
-      // Create new product
-      this.productService.createProduct(productData).subscribe({
-        next: () => {
-          this.handleSuccess('Product created successfully!');
-          this.toast.success('Product updated successfully!');
-
-        },
-        error: (error) => {
-          this.handleError(error, 'creating');
-        }
-      });
+      this.selectedColorIds.push(colorId);
     }
+
+    this.productForm.patchValue({
+      colors: this.selectedColorIds
+    });
   }
 
-  private handleSuccess(message: string): void {
-    this.isSubmitting = false;
-    this.router.navigate(['/admin/products/list']);
-  }
+  onImageSelected(event: any) {
+    const files: FileList = event.target.files;
+    if (!files || files.length === 0) return;
 
-  private handleError(error: any, action: string): void {
-    this.isSubmitting = false;
-    console.error(`Error ${action} product:`, error);
-    alert(`Error ${action} product. Please try again.`);
-  }
-
-  onImageSelected(event: any): void {
-    const files = event.target.files;
-    if (files) {
-      for (let file of files) {
-        const reader = new FileReader();
-        reader.onload = (e: any) => {
-          this.imagePreviews.push(e.target.result);
-        };
-        reader.readAsDataURL(file);
+    for (let file of Array.from(files)) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        this.toast.error(`${file.name} is not a valid image file`);
+        continue;
       }
-      event.target.value = ''; // Reset file input
+
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        this.toast.error(`${file.name} exceeds 10MB limit`);
+        continue;
+      }
+
+      this.uploadedFiles.push(file);
+
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imagePreviews.push(e.target.result);
+      };
+      reader.readAsDataURL(file);
     }
+
+    event.target.value = '';
   }
 
-  addImageByUrl(url: string): void {
-    if (!url || url.trim() === '') {
-      this.toast.error('Please enter a valid URL!');
+  // addImageByUrl(url: string): void {
+  //   if (!url || url.trim() === '') return;
 
-      return;
-    }
+  //   try {
+  //     new URL(url);
+  //   } catch {
+  //     this.toast.error('Invalid URL format');
+  //     return;
+  //   }
 
-    // Basic URL validation
-    try {
-      new URL(url);
-    } catch {
-      this.toast.error('Please enter a valid URL!');
-      return;
-    }
+  //   if (this.imagePreviews.includes(url)) {
+  //     this.toast.error('This URL has already been added');
+  //     return;
+  //   }
 
-    // Check for duplicate URLs
-    if (this.imagePreviews.includes(url)) {
-      this.toast.info('This image URL has already been added!');
-
-      return;
-    }
-
-    this.imagePreviews.push(url.trim());
-
-    // Validate the new URL
-    this.validateImageUrl(this.imagePreviews.length - 1);
-  }
+  //   this.imageUrls.push(url.trim());
+  //   this.imagePreviews.push(url.trim());
+  //   this.validateImageUrl(this.imagePreviews.length - 1);
+  // }
 
   removeImage(index: number): void {
-    // Remove the image from previews
+    const preview = this.imagePreviews[index];
+
+    // Remove from uploaded files if it's a file
+    if (preview.startsWith('data:')) {
+      const fileIndex = this.imagePreviews.slice(0, index).filter(p => p.startsWith('data:')).length;
+      this.uploadedFiles.splice(fileIndex, 1);
+    }
+    // Remove from URLs if it's a URL
+    else {
+      const urlIndex = this.imageUrls.indexOf(preview);
+      if (urlIndex > -1) {
+        this.imageUrls.splice(urlIndex, 1);
+      }
+    }
+
     this.imagePreviews.splice(index, 1);
 
-    // Create a new invalidImageUrls array with updated indices
-    const updatedInvalidUrls: number[] = [];
-
-    this.invalidImageUrls.forEach(invalidIndex => {
-      if (invalidIndex === index) {
-        // Skip the removed index
-        return;
-      } else if (invalidIndex > index) {
-        // Decrement indices that come after the removed one
-        updatedInvalidUrls.push(invalidIndex - 1);
-      } else {
-        // Keep indices that come before the removed one
-        updatedInvalidUrls.push(invalidIndex);
-      }
-    });
-
-    this.invalidImageUrls = updatedInvalidUrls;
+    // Clean up invalid tracking
+    const invalidIndex = this.invalidImageUrls.indexOf(index);
+    if (invalidIndex > -1) {
+      this.invalidImageUrls.splice(invalidIndex, 1);
+    }
+    // Adjust indices for remaining invalid images
+    this.invalidImageUrls = this.invalidImageUrls.map(i => i > index ? i - 1 : i);
   }
 
   clearAllImages(): void {
-    if (this.imagePreviews.length > 0) {
-      const confirmClear = confirm('Are you sure you want to remove all images?');
-      if (confirmClear) {
-        this.imagePreviews = [];
-        this.invalidImageUrls = [];
-      }
-    }
+    this.imagePreviews = [];
+    this.uploadedFiles = [];
+    this.imageUrls = [];
+    this.invalidImageUrls = [];
   }
 
   reorderImages(): void {
-    this.imagePreviews = this.imagePreviews
-      .map(value => ({ value, sort: Math.random() }))
-      .sort((a, b) => a.sort - b.sort)
-      .map(({ value }) => value);
+    // Create mapping of old to new indices
+    const combined = this.imagePreviews.map((v, i) => ({
+      preview: v,
+      sort: Math.random(),
+      oldIndex: i
+    }));
+
+    combined.sort((a, b) => a.sort - b.sort);
+
+    // Reorder previews
+    this.imagePreviews = combined.map(x => x.preview);
+
+    // Rebuild files and URLs arrays based on new order
+    const newFiles: File[] = [];
+    const newUrls: string[] = [];
+
+    for (const item of combined) {
+      if (item.preview.startsWith('data:')) {
+        const fileIndex = this.imagePreviews.slice(0, item.oldIndex).filter(p => p.startsWith('data:')).length;
+        newFiles.push(this.uploadedFiles[fileIndex]);
+      } else {
+        newUrls.push(item.preview);
+      }
+    }
+
+    this.uploadedFiles = newFiles;
+    this.imageUrls = newUrls;
+    this.invalidImageUrls = [];
   }
 
   markImageAsInvalid(index: number): void {
@@ -264,70 +210,107 @@ export class AdminProductFormComponent implements OnInit {
   }
 
   getImageSourceType(imageUrl: string): string {
-    if (imageUrl.startsWith('data:')) {
-      return 'Uploaded File';
-    } else if (imageUrl.startsWith('blob:')) {
-      return 'Blob URL';
-    } else {
-      return 'External URL';
-    }
+    if (imageUrl.startsWith('data:')) return 'Uploaded File';
+    if (imageUrl.startsWith('blob:')) return 'Blob URL';
+    return 'External URL';
   }
 
   private validateImageUrl(index: number): void {
     const imageUrl = this.imagePreviews[index];
 
-    // Skip validation for data URLs (uploaded files)
-    if (imageUrl.startsWith('data:') || imageUrl.startsWith('blob:')) {
-      return;
-    }
+    if (imageUrl.startsWith('data:') || imageUrl.startsWith('blob:')) return;
 
     const img = new Image();
     img.onload = () => {
-      // Image loaded successfully, remove from invalid list if present
-      const invalidIndex = this.invalidImageUrls.indexOf(index);
-      if (invalidIndex > -1) {
-        this.invalidImageUrls.splice(invalidIndex, 1);
-      }
+      const i = this.invalidImageUrls.indexOf(index);
+      if (i > -1) this.invalidImageUrls.splice(i, 1);
     };
-    img.onerror = () => {
-      // Image failed to load, mark as invalid
-      this.markImageAsInvalid(index);
-    };
+    img.onerror = () => this.markImageAsInvalid(index);
     img.src = imageUrl;
 
-    // Set timeout to handle very slow or unresponsive URLs
     setTimeout(() => {
-      if (!img.complete) {
-        this.markImageAsInvalid(index);
-      }
+      if (!img.complete) this.markImageAsInvalid(index);
     }, 5000);
   }
 
-  private validateAllImageUrls(): void {
-    this.imagePreviews.forEach((_, index) => {
-      this.validateImageUrl(index);
+  // ============== SUBMIT ====================
+  onSubmit() {
+    if (this.productForm.invalid) {
+      this.productForm.markAllAsTouched();
+      return;
+    }
+
+    if (this.uploadedFiles.length === 0) {
+      this.toast.error('Please upload at least one product image');
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    const payload = {
+      ...this.productForm.value,
+
+      categoryId: this.productForm.value.category,   // Map properly
+
+      isActive: this.productForm.value.status === 'active',
+      status: this.productForm.value.status === 'active',
+
+      topSelling: this.productForm.value.topSelling === 'yes',
+
+      colorIds: this.selectedColorIds,
+      files: this.uploadedFiles
+    };
+
+
+    this.productService.createProduct(payload).subscribe({
+      next: () => {
+        this.toast.success('Product Created Successfully');
+        this.router.navigate(['/admin/products/list']);
+        this.isSubmitting = false;
+      },
+      error: (err) => {
+        let message = 'Failed to create product';
+
+        // ASP.NET Core ModelState errors
+        if (err.error?.errors) {
+          const firstKey = Object.keys(err.error.errors)[0];
+          message = err.error.errors[firstKey][0];
+        }
+        // ApiResponse message
+        else if (err.error?.message) {
+          message = err.error.message;
+        }
+        // Fallback to HTTP status
+        else if (err.status) {
+          message = `Error ${err.status}: ${err.statusText}`;
+        }
+
+        this.toast.error(message);
+        this.isSubmitting = false;
+      }
+
     });
   }
 
-  markFormGroupTouched(): void {
-    Object.keys(this.productForm.controls).forEach(key => {
-      const control = this.productForm.get(key);
-      control?.markAsTouched();
-    });
+
+  // Form Getters
+  get name() {
+    return this.productForm.get('name');
   }
 
-  private generateSlug(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9 -]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
+  get price() {
+    return this.productForm.get('price');
   }
 
-  // Getters for easy access in template
-  get name() { return this.productForm.get('name'); }
-  get price() { return this.productForm.get('price'); }
-  get currentStock() { return this.productForm.get('currentStock'); }
-  get category() { return this.productForm.get('category'); }
-  get colors() { return this.productForm.get('colors'); }
+  get currentStock() {
+    return this.productForm.get('currentStock');
+  }
+
+  get category() {
+    return this.productForm.get('category');
+  }
+
+  get colorsControl() {
+    return this.productForm.get('colors');
+  }
 }

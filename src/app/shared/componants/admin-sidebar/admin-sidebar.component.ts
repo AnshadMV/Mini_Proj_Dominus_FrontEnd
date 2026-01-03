@@ -15,13 +15,15 @@ export class AdminSidebarComponent {
   menuItems = [
     { label: 'Dashboard', icon: 'fa-solid fa-chart-line', route: '/admin/dashboard', color: '#4285F4' }, // Blue
     {
-      label: 'Products',
+      label: 'Catelog',
       icon: 'fa-solid fa-cube',
       color: '#34A853',
       children: [
-        { label: 'Product List', route: '/admin/products/list', icon: 'fa-solid fa-list', color: '#34A853' },
-        { label: 'Add Product', route: '/admin/products/new', icon: 'fa-solid fa-plus', color: '#4285F4' },
-        { label: 'Categories', route: '/admin/products/categories', icon: 'fa-solid fa-tags', color: '#fb5705ff' }
+        { label: 'Product List', route: '/admin/products/list', icon: 'fa-solid fa-list', color: '#FBBC05' },
+        { label: 'Add Product', route: '/admin/products/new', icon: 'fa-solid fa-plus', color: '#34A853' },
+        { label: 'Add Images', route: '/admin/products/images', icon: 'fa-solid fa-plus', color: '#34A853' },
+        { label: 'Categories', route: '/admin/products/categories', icon: 'fa-solid fa-tags', color: '#fb0505ff' },
+        { label: 'Colors', route: '/admin/products/colors', icon: 'fa-solid fa-palette', color: '#4285F4' }
       ]
     },
     { label: 'Orders', icon: 'fa-solid fa-chart-pie', route: '/admin/orders', color: '#FBBC05' }, // Yellow

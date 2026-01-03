@@ -11,9 +11,10 @@
         </div>
 
         <!-- Edit/Add Mode: Form -->
-        <form *ngIf="mode !== 'delete'" [formGroup]="editForm" (ngSubmit)="onSave()">
+        <form *ngIf="mode === 'add' || mode === 'edit'" [formGroup]="editForm" (ngSubmit)="onSave()">
+
             <div class="space-y-4">
-                
+
                 <!--its Common Fields -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Name *</label>
@@ -38,17 +39,28 @@
                         <select formControlName="category"
                             class="mt-1 text-black block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Select a category</option>
-                            <option class="text-black" *ngFor="let cat of categories" [value]="cat"
-                                [selected]="cat === editForm.get('category')?.value">{{ cat }}</option>
+                            <option *ngFor="let cat of categories" [value]="cat.id">
+                                {{ cat.name }}
+                            </option>
+
                         </select>
                     </div>
-                    
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Colors (comma-separated)</label>
-                        <input formControlName="colors" type="text"
-                            class="mt-1 text-black block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="e.g., Red, Blue, White">
+                        <label class="block text-sm font-medium text-gray-700">Colors</label>
+
+                        <select formControlName="colorIds" multiple
+                            class="mt-1 text-black block w-full border border-gray-300 rounded-md p-2">
+                            <option *ngFor="let c of colors" [value]="c.id">
+                                {{ c.name }}
+                            </option>
+                        </select>
+
+                        <p class="text-xs text-gray-500 mt-1">
+                            CTRL + Category to select multiple categoriees
+                        </p>
                     </div>
+
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Warranty</label>
                         <input formControlName="warranty" type="text"
@@ -60,6 +72,15 @@
                             class="text-black w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             placeholder="Enter product description"></textarea>
                     </div>
+
+                    <div class="flex items-center">
+                        <input formControlName="status" type="checkbox"
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label class="ml-2 block text-sm text-gray-700">
+                            Active Product
+                        </label>
+                    </div>
+
                     <div class="flex items-center">
                         <input formControlName="topSelling" type="checkbox"
                             class="text-black h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
@@ -69,34 +90,56 @@
 
                 <!-- Category Specific Fields -->
                 <div *ngIf="entityType === 'category'">
-                    <!-- Image Upload -->
+
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Category Image</label>
-                        <div class="flex items-center space-x-4">
-                            <div *ngIf="imagePreview" class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
-                                <img [src]="imagePreview" alt="Preview" class="w-full h-full object-cover rounded-lg">
-                            </div>
-                            <input type="file" (change)="onImageSelected($event)" accept="image/*" 
-                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <label class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea formControlName="description"
+                            class="text-black mt-1 block w-full border border-gray-300 rounded-md p-2"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select formControlName="status"
+                            class="w-full px-3 py-2 text-black border border-gray-300 rounded-lg">
+                            <option [ngValue]="true">Active</option>
+                            <option [ngValue]="false">Inactive</option>
+                        </select>
+                    </div>
+
+                </div>
+                <!-- Color Specific Fields -->
+                <!-- Color Specific Fields -->
+                <div *ngIf="entityType === 'color'">
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Hex Code *</label>
+                        <input formControlName="hexCode" type="text" placeholder="#FFAA33"
+                            class="mt-1 text-black block w-full border border-gray-300 rounded-md p-2">
+
+                        <div class="text-red-600 text-xs mt-1"
+                            *ngIf="editForm.get('hexCode')?.touched && editForm.get('hexCode')?.invalid">
+                            Enter valid hex like #AABBCC
                         </div>
                     </div>
 
-                    <!-- Color & Status -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
-                            <input type="color" formControlName="color" class="w-full h-10 border border-gray-300 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select formControlName="status"
-                                class="w-full px-3 py-2 border text-black border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option [value]="true">Active</option>
-                                <option [value]="false">Inactive</option>
-                            </select>
+                    <div class="mt-3">
+                        <label class="block text-sm text-gray-600">Preview</label>
+                        <div class="w-full h-10 border rounded"
+                            [style.background]="editForm.value.hexCode || '#ffffff'">
                         </div>
                     </div>
+
+                    <div class="mt-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select formControlName="status"
+                            class="w-full px-3 py-2 text-black border border-gray-300 rounded-lg">
+                            <option [ngValue]="true">Active</option>
+                            <option [ngValue]="false">Inactive</option>
+                        </select>
+                    </div>
+
                 </div>
+
             </div>
             <div class="mt-6 flex justify-end space-x-3">
                 <button type="button" (click)="onClose()"
@@ -111,8 +154,8 @@
         <!-- Delete Mode: Confirmation -->
         <div *ngIf="mode === 'delete'">
             <p class="text-gray-700 mb-4">
-                Are you sure you want to delete 
-                "{{ entityType === 'product' ? product?.name : category?.name }}"? 
+                Are you sure you want to delete
+                "{{ entityType === 'product' ? product?.name : category?.name }}"?
                 This action cannot be undone.
             </p>
             <div class="flex justify-end space-x-3">
@@ -122,5 +165,119 @@
                     class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md">Delete</button>
             </div>
         </div>
+
+        <div *ngIf="mode === 'view' && entityType === 'user' && user">
+
+            <div class="space-y-4 text-black">
+
+                <!-- BASIC INFO -->
+                <div class="grid grid-cols-2 gap-3">
+
+                    <div>
+                        <span class="font-semibold">User ID:</span>
+                        <div>{{ user.id }}</div>
+                    </div>
+
+                    <div>
+                        <span class="font-semibold">Role:</span>
+                        <div class="capitalize">{{ user.role }}</div>
+                    </div>
+
+                    <div>
+                        <span class="font-semibold">Name:</span>
+                        <div>{{ user.name }}</div>
+                    </div>
+
+                    <div>
+                        <span class="font-semibold">Email:</span>
+                        <div>{{ user.email }}</div>
+                    </div>
+
+                </div>
+
+                <!-- ACCOUNT STATUS -->
+                <div class="border rounded-lg p-3 bg-gray-50">
+                    <h4 class="font-semibold mb-2">Account Status</h4>
+
+                    <div class="flex justify-between">
+                        <span>Status:</span>
+                        <span>
+                            <span *ngIf="user.isBlocked" class="text-red-600 font-semibold">
+                                Blocked
+                            </span>
+                            <span *ngIf="!user.isBlocked" class="text-green-600 font-semibold">
+                                Active
+                            </span>
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between" *ngIf="user.blockedAt">
+                        <span>Blocked On:</span>
+                        <span>{{ user.blockedAt | date:'dd/MM/yyyy hh:mm a' }}</span>
+                    </div>
+
+                    <div class="mt-2" *ngIf="user.blockedReason">
+                        <span class="font-semibold">Blocked Reason:</span>
+                        <p class="text-gray-700 mt-1">{{ user.blockedReason }}</p>
+                    </div>
+                </div>
+
+                <!-- SYSTEM TIMESTAMPS -->
+                <div class="border rounded-lg p-3 bg-gray-50">
+                    <h4 class="font-semibold mb-2">Audit Info</h4>
+
+                    <div class="flex justify-between">
+                        <span>Created On:</span>
+                        <span>
+                            {{ user.createdOn ? (user.createdOn | date:'dd/MM/yyyy hh:mm a') : '—' }}
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Created By:</span>
+                        <span>{{ user.CreatedBy || '—' }}</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Last Modified:</span>
+                        <span>
+                            {{ user.ModifiedOn ? (user.ModifiedOn | date:'dd/MM/yyyy hh:mm a') : '—' }}
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Modified By:</span>
+                        {{ user.ModifiedOn ? (user.ModifiedOn | date:'dd/MM/yyyy hh:mm a') : '—' }}
+                    </div>
+
+
+                    <div class="flex justify-between">
+                        <span>Deleted On:</span>
+                        <span>
+                            {{ user.DeletedOn ? (user.DeletedOn | date:'dd/MM/yyyy hh:mm a') : '—' }}
+                        </span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span>Deleted By:</span>
+                        <span>{{ user.DeletedBy || '—' }}</span>
+                    </div>
+
+                </div>
+
+
+
+
+            </div>
+
+            <!-- FOOTER -->
+            <div class="mt-6 flex justify-end">
+                <button (click)="onClose()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                    Close
+                </button>
+            </div>
+
+        </div>
+
     </div>
 </div>

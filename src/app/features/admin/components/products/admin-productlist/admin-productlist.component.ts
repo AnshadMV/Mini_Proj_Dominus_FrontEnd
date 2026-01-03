@@ -1,7 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { Category } from 'src/app/core/models/base-models/Category.model';
 import { Product } from 'src/app/core/models/product.model';
 import { ProductService } from 'src/app/core/services/product.service';
+import { ToastService } from 'src/app/core/services/toast.service';
 
 @Component({
   selector: 'app-admin-productlist',
@@ -16,16 +18,6 @@ export class AdminProductlistComponent implements OnInit {
   filteredProducts: Product[] = [];
 
 
-  // //pagination 
-  // pagedProducts: Product[] = [];
-  // // pagination state
-  // currentPage = 1;
-  // pageSize = 10;         // default items per page
-  // pageSizeOptions = [5, 10, 25, 50];
-  // totalItems = 0;
-  // totalPages = 0;
-  // pages: number[] = [];
-
 
   searchTerm: string = '';
 
@@ -39,25 +31,30 @@ export class AdminProductlistComponent implements OnInit {
 
 
 
-  constructor(private http: HttpClient, private productService: ProductService) { }
+  constructor(
+    private productService: ProductService,
+    private toast: ToastService
+  ) { }
 
 
 
   ngOnInit(): void {
     console.log('AdminProductlistComponent initialized');
     this.getProducts();
+
   }
 
 
 
   getProducts() {
-    this.productService.getProducts().subscribe({
+    this.productService.getAllProducts().subscribe({
       next: (products) => {
         this.products = products;
         this.filteredProducts = products;
         // this.totalItems = this.filteredProducts.length;
         // this.updatePagination();
-        console.log(products)
+        console.log(this.filteredProducts)
+        console.log(this.products)
         this.calculateCounts();
       },
       error: (error) => {
@@ -67,40 +64,31 @@ export class AdminProductlistComponent implements OnInit {
   }
 
 
-
-
-
-
   filterProducts() {
-    if (!this.searchTerm.trim()) {
+    const term = this.searchTerm.trim();
+
+    if (!term) {
       this.filteredProducts = this.products;
-    } else {
-      const term = this.searchTerm.toLowerCase().trim();
-      this.filteredProducts = this.products.filter(product =>
-        product.name.toLowerCase().includes(term) ||
-        product.category.toLowerCase().includes(term) ||
-        // product.id.toLowerCase().includes(term) ||
-        (product.colors && product.colors.includes(term))
-      );
+      return;
     }
+
+    this.productService.searchProducts(term).subscribe({
+      next: (res) => {
+        console.log("RAW SEARCH RESPONSE:", res);
+
+        if (res?.data?.items) {
+          this.filteredProducts = res.data.items;
+        } else {
+          this.filteredProducts = [];
+        }
+
+        console.log("FILTERED PRODUCTS:", this.filteredProducts);
+      },
+      error: (err) => console.error("Search failed", err)
+    });
   }
-  // // Filtering/search: resets to page 1
-  // filterProducts() {
-  //   if (!this.searchTerm.trim()) {
-  //     this.filteredProducts = [...this.products];
-  //   } else {
-  //     const term = this.searchTerm.toLowerCase().trim();
-  //     this.filteredProducts = this.products.filter(product =>
-  //       product.name?.toLowerCase().includes(term) ||
-  //       product.category?.toLowerCase().includes(term) ||
-  //       product.id?.toLowerCase().includes(term) ||
-  //       (Array.isArray(product.colors) ? product.colors.join(' ').toLowerCase().includes(term) : (product.colors || '').toLowerCase().includes(term))
-  //     );
-  //   }
-  //   this.currentPage = 1;
-  //   this.totalItems = this.filteredProducts.length;
-  //   this.updatePagination();
-  // }
+
+
 
   calculateCounts() {
     this.activeProductsCount = this.products.filter(p => p.isActive).length;
@@ -120,96 +108,58 @@ export class AdminProductlistComponent implements OnInit {
     this.selectedProduct = null;
   }
 
-  handleSave(updatedData: Partial<Product>) {
-    if (this.selectedProduct?.id) {
-      const updatedProduct = { ...this.selectedProduct, ...updatedData };
-      this.productService.updateProduct(this.selectedProduct.id, updatedProduct).subscribe({
-        next: () => {
-          this.closeModal();
-          this.getProducts();
-        },
-        error: (err) => console.error('Error updating product:', err),
-      });
-    }
+  handleSave(form: any) {
+
+    if (!this.selectedProduct) return;
+
+    const payload: any = {
+      id: this.selectedProduct.id,
+
+      name: form.name,
+      description: form.description || '',
+
+      price: Number(form.price),
+      currentStock: Number(form.currentStock),
+
+      categoryId: Number(form.category ?? form.categoryId),
+
+      isActive: !!form.isActive,
+      status: !!form.status,
+      topSelling: !!form.topSelling,
+
+      warranty: form.warranty || '',
+
+      colorIds: (form.colorIds || []).map((x: number) => Number(x)),  // MUST NOT BE EMPTY!
+      files: form.files || []
+    };
+
+
+    console.log('UPDATE PAYLOAD', payload);
+
+    // AdminProductlistComponent.handleSave(formDto)
+    this.productService.updateProduct(payload).subscribe({
+      next: () => { this.closeModal(); this.getProducts(); this.toast.success('Product updated successfully'); },
+      error: err => {
+        console.error('Update error', err);
+        const msg = err?.error?.message || err?.message || 'Update failed';
+        this.toast.error(msg);
+      }
+    });
+
   }
 
-  handleDelete(id: string) {
+
+
+  handleDelete(id: number) {
     this.productService.deleteProduct(id).subscribe({
       next: () => {
+        this.toast.success("Product deleted");
         this.closeModal();
         this.getProducts();
       },
-      error: (err) => console.error('Error deleting product:', err),
+      error: () => this.toast.error("Delete failed")
     });
   }
-  deleteProduct() {
-    // if (this.selectedProduct && this.selectedProduct.id) {
-    //   this.productService.deleteProduct(this.selectedProduct.id).subscribe({
-    //     next: () => {
-    //       this.isDeleteModalOpen = false;
-    //       this.getProducts(); // reload table
-    //     },
-    //     error: (err) => console.error('Error deleting product:', err),
-    //   });
-    // }
-  }
-
-  updateProduct(updatedData: any) {
-    if (this.selectedProduct && this.selectedProduct.id) {
-      const updatedProduct = { ...this.selectedProduct, ...updatedData };
-      this.productService.updateProduct(updatedProduct.id, updatedProduct).subscribe({
-        next: () => {
-          this.isEditModalOpen = false;
-          this.getProducts(); // reload table
-        },
-        error: (err) => console.error('Error updating product:', err),
-      });
-    }
-  }
-
-
-
-//  // Core pagination logic (client-side)
-//   updatePagination() {
-//     this.totalItems = this.filteredProducts.length;
-//     this.totalPages = Math.max(1, Math.ceil(this.totalItems / this.pageSize));
-//     // clamp current page
-//     if (this.currentPage > this.totalPages) { this.currentPage = this.totalPages; }
-//     if (this.currentPage < 1) { this.currentPage = 1; }
-
-//     // page numbers array for template
-//     this.pages = Array.from({length: this.totalPages}, (_, i) => i + 1);
-
-//     const startIndex = (this.currentPage - 1) * this.pageSize;
-//     const endIndex = startIndex + this.pageSize;
-//     this.pagedProducts = this.filteredProducts.slice(startIndex, endIndex);
-//   }
-
-//   goToPage(page: number) {
-//     if (page < 1 || page > this.totalPages) return;
-//     this.currentPage = page;
-//     this.updatePagination();
-//   }
-
-//   prevPage() {
-//     if (this.currentPage > 1) {
-//       this.currentPage--;
-//       this.updatePagination();
-//     }
-//   }
-
-//   nextPage() {
-//     if (this.currentPage < this.totalPages) {
-//       this.currentPage++;
-//       this.updatePagination();
-//     }
-//   }
-
-//   onPageSizeChange(size: number) {
-//     this.pageSize = Number(size);
-//     this.currentPage = 1;
-//     this.updatePagination();
-//   }
 
 
 

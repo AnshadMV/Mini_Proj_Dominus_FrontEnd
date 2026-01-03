@@ -97,6 +97,7 @@
             <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
             <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Colors</th>
             <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Warranty</th>
+            <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Active</th>
             <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hot</th>
             <th class="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
           </tr>
@@ -136,19 +137,25 @@
             <td class="px-2 py-3 whitespace-nowrap text-sm text-gray-500">
               <span
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {{ product.category.toUpperCase() }}
+                {{ product.categoryName }}
               </span>
             </td>
             <td class="px-2 py-3 whitespace-nowrap text-sm text-gray-500">
               <span
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {{ product.colors }}
+                {{ product.availableColors }}
               </span>
             </td>
             <td class="px-2 py-3 whitespace-nowrap text-sm text-gray-500">
               <span
                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {{ product.warranty }}
+                {{ product.warranty  }}
+              </span>
+            </td>
+            <td class="px-2 py-3 whitespace-nowrap text-sm text-gray-500">
+              <span
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {{ product.isActive? "Yes" : "No"  }}
               </span>
             </td>
             <td class="px-2 py-3 whitespace-nowrap text-sm text-gray-500">
@@ -217,8 +224,9 @@
     </div>
   </div> -->
 
-  <app-admin-modal [isOpen]="isModalOpen" [mode]="modalMode" [entityType]="'product'" [product]="selectedProduct"
+  <app-admin-modals [isOpen]="isModalOpen" [mode]="modalMode" [entityType]="'product'" [product]="selectedProduct"
     (close)="closeModal()" (save)="handleSave($event)" (confirmDelete)="handleDelete($event)">
-  </app-admin-modal>
+  </app-admin-modals>
+
 
 </div>

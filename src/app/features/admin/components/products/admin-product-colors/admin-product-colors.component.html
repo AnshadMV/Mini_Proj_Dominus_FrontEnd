@@ -1,0 +1,104 @@
+<div class="p-6">
+
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Product Colors</h1>
+            <p class="text-gray-600 mt-1">
+                Manage product colors
+            </p>
+        </div>
+        <button  (click)="openAdd()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add Color</span>
+        </button>
+       
+    </div>
+
+    <!-- Stats -->
+    <div class="bg-gray-50 rounded-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <div class="bg-white rounded-lg p-4 text-center border">
+                <div class="text-2xl font-bold text-blue-600">{{totalCategories}}</div>
+                <div class="text-sm text-gray-600">Total</div>
+            </div>
+
+            <div class="bg-white rounded-lg p-4 text-center border">
+                <div class="text-2xl font-bold text-green-600">{{activeCategories}}</div>
+                <div class="text-sm text-gray-600">Active</div>
+            </div>
+
+            <div class="bg-white rounded-lg p-4 text-center border">
+                <div class="text-2xl font-bold text-red-600">{{nonActiveCategories}}</div>
+                <div class="text-sm text-gray-600">Non Active</div>
+            </div>
+
+        </div>
+    </div>
+  <h2 class="text-lg font-semibold text-gray-800 mt-4 mb-4">Colors List</h2>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        <div *ngFor="let c of colors" class="bg-white border rounded-xl shadow p-4">
+
+            <div class="flex justify-between">
+                <h2 [ngClass]="c.isActive 
+    ? 'text-green-700' 
+    : 'text-red-700'" class="font-semibold">{{c.name}}</h2>
+
+
+            </div>
+
+            <div class="w-full h-10 rounded mt-3 border" [style.background]="c.hexCode">
+            </div>
+
+            <p class="text-sm mt-2 text-gray-500">
+                {{c.hexCode}}
+            </p>
+
+            <div class="mt-4 flex justify-between">
+
+                <button (click)="toggle(c.id)" class="px-3 py-1 text-sm rounded"
+                    [ngClass]="c.isActive ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'">
+                    {{c.isActive ? 'Deactivate' : 'Activate'}}
+                </button>
+
+                <div class="relative">
+                    <button (click)="menuOption(c.id)" class="p-2">
+                        <i class="fa-solid fa-ellipsis-vertical text-black"></i>
+                    </button>
+
+                    <div *ngIf="openMenuId == c.id" class="absolute right-0 bg-white shadow rounded border">
+
+                        <button (click)="openEdit(c)"
+                            class="block px-4 py-2 text-sm hover:bg-gray-100 w-full text-black">
+                            Edit
+                        </button>
+
+                        <button (click)="openDelete(c)"
+                            class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 w-full text-black">
+                            Delete
+                        </button>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div *ngIf="colors.length === 0" class="text-center py-12">
+        <h3 class="text-gray-600">No colors found</h3>
+        <button (click)="openAdd()" class="bg-blue-600 text-white px-4 py-2 rounded mt-2">
+            Create Color
+        </button>
+    </div>
+
+</div>
+
+<app-admin-modals [isOpen]="isModalOpen" [mode]="modalMode" [entityType]="'color'" [color]="selectedColor"
+    (close)="closeModal()" (save)="save($event)" (confirmDelete)="confirmDelete($event)">
+</app-admin-modals>

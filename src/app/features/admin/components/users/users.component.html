@@ -6,11 +6,11 @@
             <h1 class="text-2xl font-bold text-gray-800">User Management</h1>
             <p class="text-gray-600">Manage your system users and their permissions</p>
         </div>
-        <button (click)="openAddModal()"
+        <!-- <button (click)="openAddModal()"
             class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors">
             <i class="fa-solid fa-plus"></i>
             <span>Add New User</span>
-        </button>
+        </button> -->
     </div>
 
     <!-- Search and Filters -->
@@ -47,6 +47,9 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                UserId
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 User
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -55,22 +58,37 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Created
                             </th>
+
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Actions
                             </th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
-                        <tr *ngFor="let user of filteredUsers" class="hover:bg-gray-50">
+                        <tr *ngFor="let user of filteredUsers"   class="hover:bg-gray-50 cursor-pointer" (click)="openUserDetails(user)">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div
                                         class="flex-shrink-0 h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
                                         <span class="text-gray-600 font-medium">
-                                            {{ user.name.charAt(0) | uppercase}}
+                                            {{ user.id?.toString() | uppercase}}
                                         </span>
                                     </div>
-                                    <div class="ml-4">
+                                    <!-- <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ user.name }}</div>
+                                        <div class="text-sm text-gray-500">{{ user.email }}</div>
+                                    </div> -->
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <!-- <div
+                                        class="flex-shrink-0 h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
+                                        <span class="text-gray-600 font-medium">
+                                            {{ user.name.charAt(0) | uppercase}}
+                                        </span>
+                                    </div> -->
+                                    <div class="">
                                         <div class="text-sm font-medium text-gray-900">{{ user.name }}</div>
                                         <div class="text-sm text-gray-500">{{ user.email }}</div>
                                     </div>
@@ -87,30 +105,39 @@
                                 </span>
                             </td>
 
-                            
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {{ user.createdAt | date:'mediumDate' }}
+
+                            <td class="px-6 py-4 text-black whitespace-nowrap text-sm ">
+                                {{ user.createdOn | date:'dd/MM/yyyy hh:mm:ss a' }}
                             </td>
+
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2">
-                                    <button (click)="openEditModal(user)"
+                                    <!-- <button (click)="openEditModal(user)"
                                         class="text-blue-600 hover:text-blue-900 transition-colors" title="Edit User">
                                         <i class="fa-solid fa-edit"></i>
-                                    </button>
+                                    </button> -->
 
                                     <!-- Block/Unblock Buttons -->
-                                    <button *ngIf="!user.isBlocked" (click)="openBlockModal(user)"
+                                    <!-- <button *ngIf="!user.isBlocked || user?.role?.toLowerCase() !== 'Admin' "
+                                        (click)="openBlockModal(user)"
+                                        class="text-green-600 hover:text-green-900 transition-colors"
+                                        title="Block User">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button> -->
+                                    <button *ngIf="!user?.isBlocked && user?.role?.toLowerCase() !== 'admin'"
+                                        (click)="openBlockModal(user); $event.stopPropagation()"
                                         class="text-green-600 hover:text-green-900 transition-colors"
                                         title="Block User">
                                         <i class="fa-solid fa-check"></i>
                                     </button>
-                                    <button *ngIf="user.isBlocked" (click)="unblockUser(user)"
+
+                                    <button *ngIf="user.isBlocked" (click)="unblockUser(user); $event.stopPropagation()"
                                         class="text-orange-600 hover:text-orange-900 transition-colors"
                                         title="Unblock User"><i class="fa-solid fa-ban"></i>
-                                        
+
                                     </button>
 
-                                    <button (click)="openDeleteModal(user)"
+                                    <button (click)="openDeleteModal(user); $event.stopPropagation()"
                                         class="text-red-600 hover:text-red-900 transition-colors" title="Delete User">
                                         <i class="fa-solid fa-trash"></i>
                                     </button>
@@ -292,22 +319,30 @@
                 Please provide a reason for blocking this user.
             </p>
 
-            <div class="mb-4">
+            <!-- <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2 ">Block Reason</label>
                 <textarea [(ngModel)]="blockReason" placeholder="Enter reason for blocking this user..." rows="3"
                     class="w-full px-3 py-2 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 resize-none"></textarea>
                 <p class="text-xs text-gray-500 text-black mt-1">This reason will be stored for reference.</p>
-            </div>
+            </div> -->
         </div>
 
         <div class="flex justify-end space-x-3 p-6 border-t">
             <button (click)="closeBlockModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
                 Cancel
             </button>
-            <button (click)="confirmBlock()" [disabled]="!blockReason.trim()"
+            <button (click)="confirmBlock()" 
                 class="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg transition-colors">
                 Block User
             </button>
         </div>
     </div>
 </div>
+
+<app-admin-modals
+    [isOpen]="showUserModal"
+    mode="view"
+    entityType="user"
+    [user]="selectedUserForView"
+    (close)="closeUserModal()">
+</app-admin-modals>

@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { DashBoardModule } from './dashboard/dashboard.module';
 import { AdminOrdersComponent } from './orders/orders.component';
 import { UsersComponent } from './users/users.component';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 @NgModule({
     declarations: [
@@ -14,8 +15,9 @@ import { UsersComponent } from './users/users.component';
     imports: [
         CommonModule,
         ReactiveFormsModule,
-        RouterModule,
-        FormsModule, DashBoardModule
+        RouterModule, FormsModule,
+
+        FormsModule, DashBoardModule, SharedModule
     ],
 
 })

@@ -14,9 +14,9 @@ import { ContactUsComponent } from './contact-us/contact-us.component';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { AdminModule } from './admin/admin.module';
 import { SharedModule } from "../shared/shared.module";
 import { ProfileModule } from './profile/profile.module';
+import { AdminModule } from './admin/admin.module';
 
 @NgModule({
     declarations: [

@@ -24,7 +24,7 @@ export class AdminProductCategoriesComponent implements OnInit {
   constructor(
     private categoriesService: CategoriesService,
     private toast: ToastService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadCategories();
@@ -83,7 +83,11 @@ export class AdminProductCategoriesComponent implements OnInit {
           this.closeModal();
           this.loadCategories();
         },
-        error: () => this.toast.error("Failed to create category")
+        error: (err) => {
+          console.log(err);
+          this.toast.error(err?.error?.message || "Failed to create category")
+        }
+
       });
     }
 
@@ -104,6 +108,7 @@ export class AdminProductCategoriesComponent implements OnInit {
         error: () => this.toast.error("Failed to update category")
       });
     }
+
   }
 
   handleDelete(id: number) {
@@ -116,6 +121,7 @@ export class AdminProductCategoriesComponent implements OnInit {
       error: () => this.toast.error("Failed to delete category")
     });
   }
+
 
   toggleStatus(categoryId: number) {
     this.categoriesService.toggleStatus(categoryId).subscribe({

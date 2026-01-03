@@ -350,7 +350,7 @@
           },
           "paymentMethod": "Online Payment",
           "totalAmount": 59900,
-          "status": "confirmed",
+          "status": "shipped",
           "estimatedDelivery": "November 6, 2025"
         },
         {

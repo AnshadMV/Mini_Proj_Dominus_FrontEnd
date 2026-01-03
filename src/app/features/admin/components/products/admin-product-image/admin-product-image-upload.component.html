@@ -1,0 +1,89 @@
+<div class="p-6">
+
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">
+        Add Images to Product (ID: {{productId}})
+    </h1>
+    <p class="text-gray-600 mb-6">
+        Upload one or more images for this product.
+    </p>
+    <select [(ngModel)]="productId" class="border px-3 py-2 rounded text-black">
+        <option value="">Select Product</option>
+        <option *ngFor="let p of products" [value]="p.id">
+            {{p.name}}
+        </option>
+    </select>
+
+    <div class="bg-white p-6 rounded-lg shadow">
+
+        <!-- Upload Box -->
+        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center mb-6">
+            <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-3"></i>
+            <p class="text-gray-600 mb-2">Drag & drop or browse images</p>
+
+            <input type="file" multiple accept="image/*" #fileInput (change)="onFileChange($event)" class="hidden">
+
+            <button type="button" (click)="fileInput.click()"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                Browse Files
+            </button>
+
+            <p class="text-xs text-gray-500 mt-2">
+                JPG | PNG | WEBP | Max 10MB each
+            </p>
+        </div>
+
+        <!-- Preview -->
+        <div *ngIf="previews.length > 0">
+
+            <div class="flex justify-between items-center mb-3">
+                <h2 class="font-semibold text-gray-700">
+                    Selected Images ({{previews.length}})
+                </h2>
+
+                <button class="px-3 py-1 bg-red-500 text-white rounded text-sm" (click)="clearAll()">
+                    Clear All
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+
+                <div *ngFor="let img of previews; let i = index"
+                    class="relative border rounded overflow-hidden bg-gray-100">
+
+                    <img [src]="img" class="w-full h-24 object-cover">
+
+                    <button class="absolute top-1 right-1 bg-red-600 text-white rounded-full
+                         w-6 h-6 flex justify-center items-center text-xs" (click)="removeImage(i)">
+                        ×
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end mt-6 space-x-3">
+            <button routerLink="/admin/products/list" class="px-5 py-2 border border-gray-300 rounded">
+                Cancel
+            </button>
+
+            <button (click)="submit()" [disabled]="isSubmitting"
+                class="px-6 py-2 bg-blue-600 text-white rounded disabled:bg-blue-300">
+
+                <span *ngIf="isSubmitting">
+                    <i class="fa-solid fa-spinner fa-spin mr-2"></i>
+                    Uploading...
+                </span>
+
+                <span *ngIf="!isSubmitting">
+                    Upload Images
+                </span>
+
+            </button>
+        </div>
+
+    </div>
+
+</div>

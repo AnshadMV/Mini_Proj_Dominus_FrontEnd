@@ -4,26 +4,33 @@ import { Product } from 'src/app/core/models/product.model';
 import { ProductService } from 'src/app/core/services/product.service';
 import { Category } from 'src/app/core/models/base-models/Category.model';
 import { CategoriesService } from 'src/app/core/services/base_services/categories.service';
+import { User } from 'src/app/core/models/user.model';
+import { Color } from 'src/app/core/models/base-models/Color.model';
 
 @Component({
   selector: 'app-admin-modals',
   templateUrl: './admin-modals.component.html',
   styleUrls: ['./admin-modals.component.css']
 })
+
 export class AdminModalsComponent implements OnChanges {
   @Input() isOpen: boolean = false;
-  @Input() mode: 'edit' | 'delete' | 'add' = 'edit';
-  @Input() entityType: 'product' | 'category' = 'product';
+  @Input() mode: 'edit' | 'delete' | 'add' | 'view' = 'edit';
+  @Input() entityType: 'product' | 'category' | 'user' | 'color' = 'product';
   @Input() product: Product | null = null;
   @Input() category: Category | null = null;
   @Output() close = new EventEmitter<void>();
   @Output() save = new EventEmitter<any>();
   @Output() confirmDelete = new EventEmitter<number>();
+  @Input() user: User | null = null;
+  @Input() color?: Color;
 
   editForm: FormGroup;
-  categories: string[] = [];
+  categories: Category[] = [];
   selectedImageFile: File | null = null;
   imagePreview: string | null = null;
+  colors: any[] = [];
+  selectedColorIds: number[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -32,21 +39,19 @@ export class AdminModalsComponent implements OnChanges {
   ) {
     this.editForm = this.fb.group({
       name: ['', Validators.required],
-
-      //fileds related to Products
-      price: [0],
-      currentStock: [0],
-      category: [''],
-      colors: [[]],
-      warranty: [''],
       description: [''],
+      status: [true],
+      price: [null, [Validators.required, Validators.min(0)]],
+      currentStock: [null, [Validators.required, Validators.min(0)]],
+      category: ['', Validators.required],
+      colorIds: [[]],
+      warranty: [''],
       topSelling: [false],
-
-      // Category fields
-      color: ['#000000'],
-      status: [true]
+      hexCode: ['']
     });
     this.loadCategories();
+    this.loadColors();
+
   }
 
   ngOnChanges() {
@@ -72,7 +77,15 @@ export class AdminModalsComponent implements OnChanges {
         // Set validators for category fields
         this.editForm.get('color')?.setValidators([Validators.required]);
         this.editForm.get('status')?.setValidators([Validators.required]);
+      } else if (this.entityType === 'color' && this.color) {
+        this.editForm.patchValue({
+          name: this.color.name,
+          hexCode: this.color.hexCode,
+          status: this.color.isActive
+        });
       }
+
+
 
       // Update validators
       this.editForm.get('name')?.updateValueAndValidity();
@@ -85,6 +98,7 @@ export class AdminModalsComponent implements OnChanges {
       this.editForm.get('topSelling')?.updateValueAndValidity();
       this.editForm.get('color')?.updateValueAndValidity();
       this.editForm.get('status')?.updateValueAndValidity();
+      this.editForm.get('hexCode')?.updateValueAndValidity();
 
       if (this.mode === 'edit' || this.mode === 'add') {
         if (this.entityType === 'product' && this.product) {
@@ -92,8 +106,8 @@ export class AdminModalsComponent implements OnChanges {
             name: this.product.name,
             price: this.product.price,
             currentStock: this.product.currentStock,
-            category: this.product.category,
-            colors: Array.isArray(this.product.colors) ? this.product.colors.join(', ') : this.product.colors,
+            category: this.product.categoryId,
+            colorIds: this.mapColorNamesToIds(this.product.availableColors),
             warranty: this.product.warranty,
             description: this.product.description,
             topSelling: this.product.topSelling
@@ -102,11 +116,20 @@ export class AdminModalsComponent implements OnChanges {
         } else if (this.entityType === 'category' && this.category) {
           this.editForm.patchValue({
             name: this.category.name,
-            color: this.category.color,
-            status: this.category.status
+            description: this.category.description,
+            status: this.category.isActive
           });
-          this.imagePreview = this.category.icon ? this.category.icon : null;
-        } else if (this.mode === 'add') {
+        } else if (this.entityType === 'color' && this.color) {
+          this.editForm.patchValue({
+            name: this.color.name,
+            description: '',
+            hexCode: this.color.hexCode,
+            status: this.color.isActive
+          });
+        }
+
+
+        else if (this.mode === 'add') {
           // Reset form for new entity
           this.resetForm();
         }
@@ -125,6 +148,18 @@ export class AdminModalsComponent implements OnChanges {
       reader.readAsDataURL(file);
     }
   }
+  private mapColorNamesToIds(colorNames: any): number[] {
+    if (!colorNames || !this.colors || this.colors.length === 0) return [];
+
+    return (Array.isArray(colorNames) ? colorNames : [colorNames])
+      .map((name: string) => {
+        const match = this.colors.find((c: any) =>
+          c.name.trim().toLowerCase() === name.trim().toLowerCase()
+        );
+        return match ? match.id : null;
+      })
+      .filter((id: number | null) => id !== null) as number[];
+  }
 
   onClose() {
     this.close.emit();
@@ -132,38 +167,83 @@ export class AdminModalsComponent implements OnChanges {
   }
 
   onSave() {
+    if (!this.editForm.valid) {
+      this.markFormGroupTouched();
+      return;
+    }
+    const f = this.editForm.value;
+
     if ((this.mode === 'edit' || this.mode === 'add') && this.editForm.valid) {
       const formValue = this.editForm.value;
 
       if (this.entityType === 'product') {
-        const productData = {
-          ...formValue,
-          colors: typeof formValue.colors === 'string'
-            ? formValue.colors.split(',').map((c: string) => c.trim()).filter((c: string) => c !== '')
-            : formValue.colors,
+
+        const dto = {
+          id: this.product?.id,
+          name: f.name,
+          description: f.description || '',
+          price: Number(f.price),
+          currentStock: Number(f.currentStock),
+
+          categoryId: Number(f.category),   // ✅ FIXED
+
+          isActive: f.status ?? true,
+          topSelling: f.topSelling ?? false,
+          status: f.status ?? true,         // ✅ REQUIRED
+
+          warranty: f.warranty || '',
+          colorIds: (f.colorIds || []).map((x: any) => Number(x))  // ✅ ensure int[]
         };
-        this.save.emit(productData);
-      } else {
-        // Category data - use existing icon if no new image was selected
-        const categoryData = {
-          name: formValue.name,
-          color: formValue.color,
-          // Fix: Handle undefined case properly
-          icon: this.imagePreview || (this.category?.icon || ''),
-          status: formValue.status
-        };
-        this.save.emit(categoryData);
+
+        this.save.emit(dto);
       }
+
+
+      if (this.entityType === 'category') {
+        this.save.emit({
+          id: this.category?.id,     // <-- add this
+          name: f.name,
+          description: f.description ?? '',
+          isActive: f.status
+        });
+      }
+      if (this.entityType === 'color') {
+        this.save.emit({
+          id: this.color?.id,
+          name: f.name,
+          hexCode: f.hexCode,
+          isActive: f.status
+        });
+      }
+
+
       this.onClose();
     } else {
       console.log('Form is invalid:', this.editForm.errors);
       this.markFormGroupTouched();
     }
   }
+  parseColors(colors: string) {
+    if (!colors) return [];
+    return colors.split(',')
+      .map(c => c.trim())
+      .filter(c => c !== '')
+      .map((_, i) => i + 1);   // temporary mapping until real colorId list used
+  }
+
+  // categoryIdFromName(name: string) {
+  //   const cat = this.categories.find(c => c.name === name);
+  //   return cat ? cat.id : null;
+  // }
+
 
   onDelete() {
     if (this.mode === 'delete') {
-      const id = this.entityType === 'product' ? this.product?.id : this.category?.id;
+      const id =
+        this.entityType === 'product' ? this.product?.id :
+          this.entityType === 'category' ? this.category?.id :
+            this.entityType === 'color' ? this.color?.id :
+              null;
 
       if (id != null) {
         this.confirmDelete.emit(id);
@@ -172,27 +252,31 @@ export class AdminModalsComponent implements OnChanges {
     }
   }
 
+  loadColors() {
+    this.productService.getAllColors().subscribe({
+      next: res => {
+        this.colors = res.data.filter((c: any) => c.isActive && !c.isDeleted);
+      },
+      error: err => console.error("Failed loading colors", err)
+    });
+  }
+
 
   getModalTitle(): string {
-    if (this.mode === 'delete') {
-      return `Delete ${this.entityType}`;
-    }
-    return this.mode === 'add' ? `Add New ${this.entityType.charAt(0).toUpperCase() + this.entityType.slice(1)}` : `Edit ${this.entityType}`;
+    if (this.mode === 'delete') return `Delete ${this.entityType}`;
+    if (this.mode === 'view') return `User Details`;
+    return this.mode === 'add'
+      ? `Add New ${this.entityType}`
+      : `Edit ${this.entityType}`;
   }
+
 
   private resetForm() {
     // Reset form values
     this.editForm.reset({
-      name: '',
-      price: 0,
-      currentStock: 0,
-      category: '',
-      colors: [],
-      warranty: '',
       description: '',
-      topSelling: false,
-      color: '#000000',
       status: true
+
     });
 
     // Clear all validators
@@ -246,14 +330,14 @@ export class AdminModalsComponent implements OnChanges {
   }
 
   private loadCategories() {
-    this.productService.getCategories().subscribe({
+    this.categoriesService.getCategories().subscribe({
       next: (categories) => {
-        this.categories = categories.map(cat => cat.name);
-        if (this.isOpen && this.entityType === 'product' && !this.editForm.get('category')?.value) {
-          this.editForm.patchValue({ category: this.categories[0] });
-        }
+        // this.categories = categories;
+        this.categories = (categories as Category[]).filter(c => c.isActive === true)
+
       },
       error: (err) => console.error('Error loading categories:', err),
     });
   }
+
 }

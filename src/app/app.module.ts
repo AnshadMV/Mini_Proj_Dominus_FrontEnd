@@ -11,6 +11,7 @@ import { FeaturesModule } from './features/features.module';
 import { SharedModule } from './shared/shared.module';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
+import { AdminModule } from './features/admin/admin.module';
 // import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 
 @NgModule({
@@ -21,7 +22,7 @@ import { BrowserModule } from '@angular/platform-browser';
     CommonModule, BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    FormsModule, BrowserAnimationsModule, NgxPaginationModule,
+    FormsModule, BrowserAnimationsModule, NgxPaginationModule,AdminModule  ,
     CoreModule, AuthModule, FeaturesModule, SharedModule
   ],
   providers: [

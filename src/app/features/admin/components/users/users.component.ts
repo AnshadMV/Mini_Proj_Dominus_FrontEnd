@@ -18,6 +18,10 @@ export class UsersComponent implements OnInit {
   showBlockModal = false;
   blockReason = '';
   userToBlock: User | null = null;
+  showDetailsModal = false;
+  detailsUser: User | null = null;
+  showUserModal = false;
+  selectedUserForView: User | null = null;
 
 
   // Modal states
@@ -47,18 +51,21 @@ export class UsersComponent implements OnInit {
 
   loadUsers(): void {
     this.loading = true;
-    // this.userService.getUsers().subscribe({
-    //   next: (users) => {
-    //     this.users = users;
-    //     this.filteredUsers = users;
-    //     this.loading = false;
-    //   },
-    //   error: (error) => {
-    //     console.error('Error loading users:', error);
-    //     this.loading = false;
-    //   }
-    // });
+
+    this.userService.getAllUsers().subscribe({
+      next: users => {
+        this.users = users;
+        this.filteredUsers = users;
+        this.loading = false;
+      },
+      error: err => {
+        console.error(err);
+        this.toast.error("Failed to load users");
+        this.loading = false;
+      }
+    });
   }
+
 
   // Search functionality
   onSearch(): void {
@@ -155,52 +162,63 @@ export class UsersComponent implements OnInit {
     this.blockReason = '';
     this.showBlockModal = true;
   }
+  openDetailsModal(user: User) {
+    this.detailsUser = user;
+    this.showDetailsModal = true;
+  }
+
+  closeDetailsModal() {
+    this.detailsUser = null;
+    this.showDetailsModal = false;
+  }
 
   closeBlockModal(): void {
     this.showBlockModal = false;
     this.userToBlock = null;
     this.blockReason = '';
   }
+
+  openUserDetails(user: User) {
+    this.selectedUserForView = user;
+    this.showUserModal = true;
+  }
+
+  closeUserModal() {
+    this.showUserModal = false;
+    this.selectedUserForView = null;
+  }
   confirmDelete(): void {
-    // if (this.selectedUser && this.selectedUser.id) {
-    //   this.userService.deleteUser(this.selectedUser.id.toString()).subscribe({
-    //     next: () => {
-    //       this.users = this.users.filter(u => u.id !== this.selectedUser?.id);
-    //       this.filteredUsers = this.filteredUsers.filter(u => u.id !== this.selectedUser?.id);
-    //       this.closeDeleteModal();
-    //     },
-    //     error: (error) => {
-    //       console.error('Error deleting user:', error);
-    //       alert('Error deleting user. Please try again.');
-    //     }
-    //   });
-    // }
+    if (!this.selectedUser?.id) return;
+
+    this.userService.softDeleteUser(this.selectedUser.id).subscribe({
+      next: () => {
+        this.toast.success("User deleted successfully");
+        this.closeDeleteModal();
+        this.loadUsers();
+      },
+      error: err => {
+        console.error(err);
+        this.toast.error("Failed to delete user");
+      }
+    });
   }
-  // In users.component.ts - UPDATE confirmBlock method
+
   confirmBlock(): void {
-    // if (this.userToBlock && this.userToBlock.id) {
-    //   this.userService.blockUser(this.userToBlock.id.toString(), this.blockReason).subscribe({
-    //     next: (updatedUser) => {
-    //       const index = this.users.findIndex(u => u.id === updatedUser.id);
-    //       if (index !== -1) {
-    //         this.users[index] = updatedUser;
-    //         this.filteredUsers = [...this.users];
-    //       }
-    //       this.toast.success('User blocked successfully');
-    //       this.closeBlockModal();
+    if (!this.userToBlock?.id) return;
 
-    //       // The blocked user will be automatically logged out immediately
-    //       // through the auth service and interceptor
-    //     },
-    //     error: (error) => {
-    //       console.error('Error blocking user:', error);
-    //       this.toast.error('Error blocking user');
-    //       this.closeBlockModal();
-    //     }
-    //   });
-    // }
+    this.userService.blockUnblockUser(this.userToBlock.id).subscribe({
+      next: () => {
+        this.toast.success("User blocked successfully");
+        this.closeBlockModal();
+        this.loadUsers();
+      },
+      error: err => {
+        console.error(err);
+        this.toast.error("Failed to block user");
+        this.closeBlockModal();
+      }
+    });
   }
-
 
   // Utility function to validate user data
   private isValidUser(user: Partial<User>): boolean {
@@ -219,22 +237,17 @@ export class UsersComponent implements OnInit {
     }
   }
 
-
   unblockUser(user: User): void {
-    // this.userService.unblockUser(user.id!.toString()).subscribe({
-    //   next: (updatedUser) => {
-    //     const index = this.users.findIndex(u => u.id === updatedUser.id);
-    //     if (index !== -1) {
-    //       this.users[index] = updatedUser;
-    //       this.filteredUsers = [...this.users];
-    //     }
-    //     this.toast.success('User unblocked successfully');
-    //   },
-    //   error: (error) => {
-    //     console.error('Error unblocking user:', error);
-    //     this.toast.error('Error unblocking user');
-    //   }
-    // });
+    this.userService.blockUnblockUser(user.id!).subscribe({
+      next: () => {
+        this.toast.success("User unblocked successfully");
+        this.loadUsers();
+      },
+      error: err => {
+        console.error(err);
+        this.toast.error("Failed to unblock user");
+      }
+    });
   }
 
   // Add this method to get block status badge

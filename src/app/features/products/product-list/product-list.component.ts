@@ -6,11 +6,12 @@ import { ProductService } from 'src/app/core/services/product.service';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { SearchService } from 'src/app/core/services/navbar_search.service';
 import { Product } from 'src/app/core/models/product.model';
-import { Category } from 'src/app/core/models/category.model';
 import { website_constants } from 'src/app/core/constants/app.constant';
 import { CartService } from 'src/app/core/services/cart.service';
 import { WishlistService } from 'src/app/core/services/wishlist.service';
 import { WishlistBadgeService } from 'src/app/core/services/wishlistBadge.service';
+import { Category } from 'src/app/core/models/base-models/Category.model';
+import { CategoriesService } from 'src/app/core/services/base_services/categories.service';
 
 @Component({
     selector: 'app-product-list',
@@ -20,6 +21,7 @@ import { WishlistBadgeService } from 'src/app/core/services/wishlistBadge.servic
 export class ProductListComponent implements OnInit {
 
     private productService = inject(ProductService);
+    private categorytService = inject(CategoriesService);
     private router = inject(Router);
     private http = inject(HttpClient);
     private toast = inject(ToastService)
@@ -33,11 +35,12 @@ export class ProductListComponent implements OnInit {
     filteredProducts: Product[] = [];
     categories: Category[] = [];
     isLoading = true;
+    isColorsExpanded: boolean = false;
 
 
     //Filter From backend
     searchTerm: string = '';
-    selectedCategory: string = 'all';
+    selectedCategory: number | null = null;
     priceRange: [number, number] = [0, 100000];
     showOnlyPopular: boolean = false;
     showOnlyInStock: boolean = false;
@@ -123,7 +126,7 @@ export class ProductListComponent implements OnInit {
 
 
     loadCategories() {
-        this.productService.getCategories().subscribe({
+        this.categorytService.getCategories().subscribe({
             next: (categories) => {
                 console.log('Fetched categories:', categories);
                 this.categories = categories;
@@ -262,11 +265,11 @@ export class ProductListComponent implements OnInit {
             pageSize: this.itemsPerPage,
             sortBy: this.sortBy,
             descending: this.sortDirection === 'desc',
-            isActive: true 
+            isActive: true
         };
 
         if (this.searchTerm?.trim()) params.name = this.searchTerm.trim();
-        if (this.selectedCategory !== 'all') params.categoryId = this.selectedCategory;
+        if (this.selectedCategory) params.categoryId = this.selectedCategory;
 
         params.minPrice = this.priceRange[0];
         params.maxPrice = this.priceRange[1];
@@ -306,7 +309,7 @@ export class ProductListComponent implements OnInit {
         this.applyFilters();
     }
 
-    onCategoryChange(categoryId: string) {
+    onCategoryChange(categoryId: number | null) {
         this.selectedCategory = categoryId;
         this.currentPage = 1;
         this.applyFilters();
@@ -315,7 +318,9 @@ export class ProductListComponent implements OnInit {
     onPriceRangeChange() {
         this.applyFilters();
     }
-
+toggleColors() {
+  this.isColorsExpanded = !this.isColorsExpanded;
+}
     toggleColorFilter(colorId: string) {
         if (this.selectedColors.includes(colorId)) {
             this.selectedColors = this.selectedColors.filter(c => c !== colorId);
@@ -367,7 +372,7 @@ export class ProductListComponent implements OnInit {
     }
     get activeFilterCount(): number {
         let count = 0;
-        if (this.selectedCategory !== 'all') count++;
+        if (this.selectedCategory) count++;
         if (this.priceRange[0] > this.minPrice || this.priceRange[1] < this.maxPrice) count++;
         if (this.selectedColors.length > 0) count++;
         if (this.showOnlyPopular) count++;
@@ -458,7 +463,7 @@ export class ProductListComponent implements OnInit {
 
     clearFilters() {
         this.searchTerm = '';
-        this.selectedCategory = 'all';
+        this.selectedCategory = 0;
         this.priceRange = [this.minPrice, this.maxPrice];
         this.selectedColors = [];
         this.showOnlyPopular = false;

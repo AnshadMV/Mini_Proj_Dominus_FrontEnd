@@ -4,47 +4,63 @@ import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Category } from '../../models/base-models/Category.model';
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class CategoriesService {
 
-  private baseUrl = environment.API.CATEGORYURL;
+    private baseUrl = environment.API.CATEGORYURL;
 
-  constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
-  getCategories(): Observable<Category[]> {
-    return this.http.get<any>(`${this.baseUrl}/Get_All`)
-      .pipe(
-        map(res => res.data as Category[])
-      );
-  }
+    getCategories(): Observable<Category[]> {
+        return this.http.get<any>(`${this.baseUrl}/Get_All`)
+            .pipe(
+                map(res => res.data as Category[])
+            );
+    }
 
-  addCategory(category: Partial<Category>) {
-    const body = {
-      name: category.name,
-      description: category.description ?? '',
-      isActive: category.isActive ?? true
-    };
 
-    return this.http.post(`${this.baseUrl}/Admin/Create`, body);
-  }
+    addCategory(category: Partial<Category>) {
+        const body = {
+            name: category.name,
+            description: category.description ?? '',
+            isActive: category.isActive ?? true
+        };
 
-  updateCategory(category: Partial<Category>) {
-    const body = {
-      id: category.id,
-      name: category.name,
-      description: category.description ?? '',
-      isActive: category.isActive
-    };
+        return this.http.post(
+            `${this.baseUrl}/Admin/Create`,
+            body,
+            { withCredentials: true }
+        );
+    }
 
-    return this.http.put(`${this.baseUrl}/Admin/Update`, body);
-  }
+    updateCategory(category: Partial<Category>) {
+        return this.http.put(
+            `${this.baseUrl}/Admin/Update`,
+            {
+                id: category.id,
+                name: category.name,
+                description: category.description ?? '',
+                isActive: category.isActive
+            },
+            { withCredentials: true }
+        );
+    }
 
-  deleteCategory(id: number) {
-    return this.http.delete(`${this.baseUrl}/Admin/DeleteBy_${id}`);
-  }
+    deleteCategory(id: number) {
+        return this.http.delete(
+            `${this.baseUrl}/Admin/DeleteBy_${id}`,
+            { withCredentials: true }
+        );
+    }
 
-  toggleStatus(id: number) {
-    return this.http.patch(`${this.baseUrl}/Admin/toggle/status${id}`, null);
-  }
+    toggleStatus(id: number) {
+        return this.http.patch(
+            `${this.baseUrl}/Admin/toggle/status${id}`,
+            null,
+            { withCredentials: true }
+        );
+    }
+
+
 }

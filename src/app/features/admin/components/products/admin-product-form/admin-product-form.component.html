@@ -1,4 +1,4 @@
-<div class="container mx-auto p-6">
+<div class="p-6">
   <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-800">
       {{ isEditMode ? 'Edit Product' : 'Add New Product' }}
@@ -24,8 +24,7 @@
             <input type="text" id="name" formControlName="name"
               class="w-full px-3 py-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter product name">
-            <div *ngIf="name?.invalid && name?.touched"
-              class="text-red-500 text-sm mt-1">
+            <div *ngIf="name?.invalid && name?.touched" class="text-red-500 text-sm mt-1">
               <span *ngIf="name?.errors?.['required']">Product name is required</span>
               <span *ngIf="name?.errors?.['minlength']">Product name must be at least 3 characters</span>
             </div>
@@ -33,16 +32,26 @@
 
           <!-- Colors -->
           <div>
-            <label for="colors" class="block text-sm font-medium text-gray-700 mb-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
               Colors Available *
             </label>
-            <input type="text" id="colors" formControlName="colors"
-              class="w-full px-3 py-2 border border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter colors (comma separated)">
-            <div *ngIf="colors?.invalid && colors?.touched"
+
+            <div class="flex flex-wrap gap-2 ">
+
+              <button *ngFor="let c of colors" type="button" (click)="toggleColor(c.id)" [ngClass]="{
+        'ring-2 ring-blue-600 bg-blue-100': selectedColorIds.includes(c.id),
+        'ring-1 ring-gray-300': !selectedColorIds.includes(c.id)
+      }" class="px-3 py-1 rounded-lg border text-black">
+                {{ c.name }}
+              </button>
+
+            </div>
+
+            <div *ngIf="productForm.get('colors')?.invalid && productForm.get('colors')?.touched"
               class="text-red-500 text-sm mt-1">
               Colors are required
             </div>
+
           </div>
         </div>
 
@@ -73,8 +82,7 @@
                 class="w-full pl-8 pr-3 py-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="0.00">
             </div>
-            <div *ngIf="price?.invalid && price?.touched"
-              class="text-red-500 text-sm mt-1">
+            <div *ngIf="price?.invalid && price?.touched" class="text-red-500 text-sm mt-1">
               <span *ngIf="price?.errors?.['required']">Price is required</span>
               <span *ngIf="price?.errors?.['min']">Price must be greater than 0</span>
             </div>
@@ -101,8 +109,7 @@
             <input type="number" id="currentStock" formControlName="currentStock" min="0"
               class="w-full px-3 py-2 border text-black border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="0">
-            <div *ngIf="currentStock?.invalid && currentStock?.touched"
-              class="text-red-500 text-sm mt-1">
+            <div *ngIf="currentStock?.invalid && currentStock?.touched" class="text-red-500 text-sm mt-1">
               <span *ngIf="currentStock?.errors?.['required']">Stock quantity is required</span>
               <span *ngIf="currentStock?.errors?.['min']">Stock must be 0 or greater</span>
             </div>
@@ -127,8 +134,7 @@
                 {{ category.name }}
               </option>
             </select>
-            <div *ngIf="category?.invalid && category?.touched"
-              class="text-red-500 text-sm mt-1">
+            <div *ngIf="category?.invalid && category?.touched" class="text-red-500 text-sm mt-1">
               Category is required
             </div>
           </div>
@@ -177,7 +183,7 @@
             <p class="text-gray-600 mb-2">Drag & drop your images here</p>
             <p class="text-sm text-gray-500 mb-4">or</p>
             <input type="file" #fileInput (change)="onImageSelected($event)" multiple accept="image/*" class="hidden">
-            <button type="button" (click)="fileInput.click()" 
+            <button type="button" (click)="fileInput.click()"
               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
               Browse Files
             </button>
@@ -185,33 +191,16 @@
           </div>
         </div>
 
-        <!-- URL Upload Option -->
-        <div class="mb-6">
-          <h3 class="text-md font-medium text-gray-700 mb-3">Add Image by URL</h3>
-          <div class="flex space-x-2">
-            <input type="url" #urlInput 
-              class="flex-1 px-3 py-2 border border-gray-300 text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter image URL (https://...)"
-              (keyup.enter)="addImageByUrl(urlInput.value); urlInput.value=''">
-            <button type="button" (click)="addImageByUrl(urlInput.value); urlInput.value=''"
-              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-              Add URL
-            </button>
-          </div>
-          <p class="text-xs text-gray-500 mt-1">Enter a valid image URL and click Add URL</p>
-        </div>
+        
 
         <!-- Image Preview -->
         <div *ngIf="imagePreviews.length > 0" class="mt-4">
           <h3 class="text-sm font-medium text-gray-700 mb-2">Selected Images ({{ imagePreviews.length }})</h3>
           <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <div *ngFor="let preview of imagePreviews; let i = index" 
-                 class="relative border rounded-lg overflow-hidden bg-gray-100">
-              <img [src]="preview" 
-                   class="w-full h-24 object-cover"
-                   [class]="isImageUrlInvalid(i) ? 'opacity-50' : ''"
-                   (error)="markImageAsInvalid(i)"
-                   alt="Preview">
+            <div *ngFor="let preview of imagePreviews; let i = index"
+              class="relative border rounded-lg overflow-hidden bg-gray-100">
+              <img [src]="preview" class="w-full h-24 object-cover" [class]="isImageUrlInvalid(i) ? 'opacity-50' : ''"
+                (error)="markImageAsInvalid(i)" alt="Preview">
               <div class="p-2 text-xs truncate" [title]="getImageSourceType(preview)">
                 {{ getImageSourceType(preview) }}
               </div>
@@ -219,13 +208,13 @@
                 class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 transition-colors">
                 ×
               </button>
-              <div *ngIf="isImageUrlInvalid(i)" 
-                   class="absolute inset-0 bg-red-100 bg-opacity-50 flex items-center justify-center">
+              <div *ngIf="isImageUrlInvalid(i)"
+                class="absolute inset-0 bg-red-100 bg-opacity-50 flex items-center justify-center">
                 <span class="text-red-600 text-xs font-medium">Invalid URL</span>
               </div>
             </div>
           </div>
-          
+
           <!-- Bulk Actions -->
           <div *ngIf="imagePreviews.length > 0" class="mt-4 flex space-x-2">
             <button type="button" (click)="clearAllImages()"

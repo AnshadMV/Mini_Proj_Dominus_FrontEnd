@@ -1,11 +1,11 @@
 export interface Category {
   id: number;
   name: string;
-  description?: string;
-  status: boolean;   // map from isActive
-  icon?: string;
-  color?: string;
-    isActive: boolean;
+  description: string;
+  // status: boolean;   // map from isActive
+  // icon?: string;
+  // color?: string;
+  isActive: boolean;
   productCount?: number;
 
 }

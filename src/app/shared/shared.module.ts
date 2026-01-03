@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 // import { RegisterComponent } from './features/auth/register/register.component';
 // import { ButtonComponent } from './shared/componants/button/button.component';
 import { HttpClientModule } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxPaginationModule } from 'ngx-pagination';
 import { CommonModule } from '@angular/common';
 import { CardComponent } from './componants/card/card.component';
@@ -16,6 +16,7 @@ import { SafeUrlPipe } from './pipes/angular_pipes/safe-url.pipe';
 import { RouterModule } from '@angular/router';
 import { AdminSidebarComponent } from './componants/admin-sidebar/admin-sidebar.component';
 import { AdminHeaderComponent } from './componants/admin-header/admin-header.component';
+import { AdminModalsComponent } from './componants/admin_modals/admin-modals.component';
 
 @NgModule({
   declarations: [
@@ -31,13 +32,13 @@ import { AdminHeaderComponent } from './componants/admin-header/admin-header.com
     ToastComponent, 
     SafeUrlPipe, 
     AdminHeaderComponent,
-        AdminSidebarComponent,
+        AdminSidebarComponent,AdminModalsComponent
   ],
   imports: [
     CommonModule,
    RouterModule,
     HttpClientModule, 
-    FormsModule,  NgxPaginationModule, 
+    FormsModule,  NgxPaginationModule, ReactiveFormsModule
     
   ],
   exports:[
@@ -48,7 +49,7 @@ import { AdminHeaderComponent } from './componants/admin-header/admin-header.com
     MenuModalComponent,
     ToastComponent, RouterModule, 
     SafeUrlPipe, AdminHeaderComponent,
-        AdminSidebarComponent,
+        AdminSidebarComponent,AdminModalsComponent ,ReactiveFormsModule
   ]
 })
 
