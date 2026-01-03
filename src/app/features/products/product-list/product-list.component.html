@@ -214,7 +214,7 @@
                         <!-- Product Image Section -->
                         <div (click)="viewProductDetail(product)" class="cursor-pointer flex-grow">
                             <div class="aspect-square bg-gray-50 relative overflow-hidden">
-                                <img [src]="product.images" [alt]="product.name"
+                                <img [src]="product.images?.[0]" [alt]="product.name"
                                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
 
                                 <!-- Badges positioned over image -->

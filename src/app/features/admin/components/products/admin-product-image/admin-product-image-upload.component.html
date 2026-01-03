@@ -3,16 +3,18 @@
     <h1 class="text-2xl font-bold text-gray-800 mb-2">
         Add Images to Product (ID: {{productId}})
     </h1>
-    <p class="text-gray-600 mb-6">
-        Upload one or more images for this product.
+    <p class="text-gray-600 mb-6 mt-2" >
+        Select the product : 
+        <select [(ngModel)]="productId" class="border px-3 py-2 rounded text-black">
+            <option class="text-black" *ngFor="let p of products" [value]="p.id">
+                {{p.name}}
+            </option>
+        </select>
     </p>
-    <select [(ngModel)]="productId" class="border px-3 py-2 rounded text-black">
-        <option value="">Select Product</option>
-        <option *ngFor="let p of products" [value]="p.id">
-            {{p.name}}
-        </option>
-    </select>
 
+    <p class="text-gray-600 mb-6 mt-2">
+        Upload one or more images for this product - below.
+    </p>
     <div class="bg-white p-6 rounded-lg shadow">
 
         <!-- Upload Box -->
@@ -65,7 +67,7 @@
 
         <!-- Actions -->
         <div class="flex justify-end mt-6 space-x-3">
-            <button routerLink="/admin/products/list" class="px-5 py-2 border border-gray-300 rounded">
+            <button routerLink="/admin/products/list" class="px-5 py-2 border border-gray-300 rounded text-black">
                 Cancel
             </button>
 

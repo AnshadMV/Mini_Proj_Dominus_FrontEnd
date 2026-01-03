@@ -11,7 +11,7 @@ import { Product } from 'src/app/core/models/product.model';
 })
 export class AdminProductImageUploadComponent implements OnInit {
 
-    productId!: number;
+productId: number | null = null;
     defaultText: string="Select Product";
     selectedFiles: File[] = [];
     previews: string[] = [];

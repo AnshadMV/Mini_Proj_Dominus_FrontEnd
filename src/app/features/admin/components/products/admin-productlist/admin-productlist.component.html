@@ -108,7 +108,7 @@
             <td class="px-2 py-3 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-lg flex items-center justify-center mr-3">
-                  <img [src]="product.images[0]" [alt]="product.name"
+                  <img [src]="product.images?.[0]" [alt]="product.name"
                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 rounded-lg" />
 
                 </div>
