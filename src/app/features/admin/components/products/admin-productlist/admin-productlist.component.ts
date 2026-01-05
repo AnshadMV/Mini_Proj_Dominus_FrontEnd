@@ -16,6 +16,7 @@ export class AdminProductlistComponent implements OnInit {
   activeProductsCount: number = 0;
   lowStockCount: number = 0;
   filteredProducts: Product[] = [];
+  isLoading: boolean = false;
 
 
 
@@ -47,6 +48,8 @@ export class AdminProductlistComponent implements OnInit {
 
 
   getProducts() {
+    this.isLoading = true;
+
     this.productService.getAllProducts().subscribe({
       next: (products) => {
         this.products = products;
@@ -59,6 +62,8 @@ export class AdminProductlistComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading products:', error);
+      }, complete: () => {
+        this.isLoading = false;
       }
     });
   }

@@ -1,220 +1,162 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { ToastService } from 'src/app/core/services/toast.service';
-import { Order } from 'src/app/core/models/order.model';
-import { AdminOrder } from 'src/app/core/models/admin-models/adminOrder-models';
-
-// Extended interface for admin orders with user info
-
+import { OrderService } from 'src/app/core/services/order.service';
+import { UserService } from 'src/app/core/services/user.service';
 
 @Component({
-  selector: 'app-admin-orders',
+  selector: 'app-orders',
   templateUrl: './orders.component.html',
+  styleUrls: ['./orders.component.css'],
 })
-
 export class AdminOrdersComponent implements OnInit {
-  private usersUrl = 'http://localhost:3000/users';
 
-  allOrders: AdminOrder[] = [];
-  filteredOrders: AdminOrder[] = [];
-  isLoading: boolean = true;
-  selectedOrder: AdminOrder | null = null;
-  filterStatus: string = 'all';
-  searchTerm: string = '';
+  orders: any[] = [];
+  filteredOrders: any[] = [];
 
-  // Statistics
-  stats = {
-    total: 0,
-    pending: 0,
-    confirmed: 0,
-    shipped: 0,
-    delivered: 0,
-    cancelled: 0
+  isLoading = true;
+  selectedOrder: any = null;
+
+
+
+  statusCounts: any = {
+    PendingPayment: 0,
+    Paid: 0,
+    Shipped: 0,
+    Delivered: 0,
+    Cancelled: 0
+  };
+  statusTotals: any = {
+    PendingPayment: 0,
+    Paid: 0,
+    Shipped: 0,
+    Delivered: 0,
+    Cancelled: 0
   };
 
+
+
+
   constructor(
-    private http: HttpClient,
-    private toast: ToastService
+    private orderService: OrderService,
+    private toast: ToastService,
+    private router: Router,
+    private userService: UserService
   ) { }
 
   ngOnInit(): void {
-    this.loadAllOrders();
+    this.loadOrders();
   }
 
-  loadAllOrders(): void {
+  loadOrders(): void {
     this.isLoading = true;
-    this.http.get<any[]>(this.usersUrl).subscribe({
-      next: (users) => {
-        // Extract orders from all users and flatten the array
-        this.allOrders = users
-          .filter(user => user.orders && user.orders.length > 0)
-          .flatMap(user =>
-            user.orders.map((order: Order) => ({
-              ...order,
-              userName: user.name,
-              userEmail: user.email
-            } as AdminOrder))
-          )
-          .reverse(); // Show latest first
 
-        this.updateStatistics();
-        this.filterOrders(this.filterStatus);
-        this.isLoading = false;
+    this.orderService.getAllOrders_Admin().subscribe({
+      next: (orders: any) => {
+
+        const list = Array.isArray(orders)
+          ? orders
+          : orders?.items || [];
+
+        this.userService.getAllUsers().subscribe(users => {
+          const userMap = new Map(
+            users.map((u: any) => [String(u.id), u.name])   
+          );
+          console.log(orders)
+          this.orders = list
+            .map((o: any) => ({
+              ...o,
+              userName: userMap.get(String(o.userId)) || 'Unknown User', 
+              status: o.status?.trim(),
+              orderDate: o.orderDate,
+              items: o.items.map((i: any) => ({
+                name: i.productName,
+                image: i.productImages?.length ? i.productImages[0] : '/assets/noimage.png',
+                quantity: i.quantity,
+                price: i.price,
+                color: i.colorName,
+                category: i.category ?? ''
+              }))
+            }))
+            .sort((a: any, b: any) =>
+              new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime()
+            );
+
+          this.filteredOrders = this.orders;
+          this.calculateStatusCounts();
+          this.isLoading = false;
+        });
+
       },
-      error: (err) => {
-        console.error('Error loading orders:', err);
-        this.toast.error("Failed to load orders");
+      error: () => {
+        this.toast.error('Failed to load orders');
         this.isLoading = false;
       }
     });
   }
 
-  updateStatistics(): void {
-    this.stats = {
-      total: this.allOrders.length,
-      pending: this.allOrders.filter(order => order.status === 'pending').length,
-      confirmed: this.allOrders.filter(order => order.status === 'confirmed').length,
-      shipped: this.allOrders.filter(order => order.status === 'shipped').length,
-      delivered: this.allOrders.filter(order => order.status === 'delivered').length,
-      cancelled: this.allOrders.filter(order => order.status === 'cancelled').length
-    };
-  }
 
-  filterOrders(status: string): void {
-    this.filterStatus = status;
-    let filtered = this.allOrders;
 
-    if (status !== 'all') {
-      filtered = filtered.filter(order => order.status === status);
-    }
-
-    if (this.searchTerm) {
-      filtered = filtered.filter(order =>
-        order.orderId.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        order.userName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        order.userEmail.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
-
-    this.filteredOrders = filtered;
-  }
-
-  onSearchChange(searchTerm: string): void {
-    this.searchTerm = searchTerm;
-    this.filterOrders(this.filterStatus);
-  }
-
-  viewOrderDetails(order: AdminOrder): void {
+  viewOrderDetails(order: any) {
     this.selectedOrder = order;
   }
 
-  closeOrderDetails(): void {
+  closeOrderDetails() {
     this.selectedOrder = null;
   }
 
-  updateOrderStatus(order: AdminOrder, newStatus: Order['status']): void {
-    if (order.status === newStatus) return;
+  getStatusColor(status: string): string {
+    const colors: any = {
+      PendingPayment: 'bg-yellow-100 text-yellow-800',
+      Paid: 'bg-blue-100 text-blue-800',
+      Shipped: 'bg-purple-100 text-purple-800',
+      Delivered: 'bg-green-100 text-green-800',
+      Cancelled: 'bg-red-100 text-red-800'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  }
+  calculateStatusCounts() {
+    const counts: any = {
+      PendingPayment: 0,
+      Paid: 0,
+      Shipped: 0,
+      Delivered: 0,
+      Cancelled: 0
+    };
 
-    const userUrl = `${this.usersUrl}/${order.userId}`;
+    const totals: any = {
+      PendingPayment: 0,
+      Paid: 0,
+      Shipped: 0,
+      Delivered: 0,
+      Cancelled: 0
+    };
 
-    this.http.get<any>(userUrl).subscribe({
-      next: (user) => {
-        const updatedOrders = user.orders.map((userOrder: Order) =>
-          userOrder.id === order.id ? { ...userOrder, status: newStatus } : userOrder
-        );
+    this.orders.forEach(o => {
+      if (counts[o.status] !== undefined) {
+        counts[o.status]++;
+        totals[o.status] += o.totalAmount || 0;
+      }
+    });
 
-        this.http.patch(userUrl, { orders: updatedOrders }).subscribe({
-          next: () => {
-            this.toast.success(`Order status updated to ${newStatus}`);
-            this.loadAllOrders();
-            this.selectedOrder = null;
-          },
-          error: (err) => {
-            console.error('Error updating order status:', err);
-            this.toast.error("Failed to update order status");
-          }
-        });
+    this.statusCounts = counts;
+    this.statusTotals = totals;
+  }
+
+
+  changeStatus(order: any, newStatus: string) {
+    this.orderService.toggleOrderStatus(order.orderId, newStatus).subscribe({
+      next: res => {
+        this.toast.success(res.message || 'Status updated successfully');
+        order.status = newStatus;
       },
-      error: (err) => {
-        console.error('Error fetching user data:', err);
-        this.toast.error("Failed to update order status");
+      error: err => {
+        this.toast.error(err?.error?.message || 'Failed to update status');
       }
     });
   }
 
-  getStatusColor(status: string): string 
-  {
-    const colors: 
-    { [key: string]: string } = 
-    {
-      'pending': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      'confirmed': 'bg-blue-100 text-blue-800 border-blue-200',
-      'shipped': 'bg-purple-100 text-purple-800 border-purple-200',
-      'delivered': 'bg-green-100 text-green-800 border-green-200',
-      'cancelled': 'bg-red-100 text-red-800 border-red-200'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
-  }
-
-  getStatusIcon(status: string): string {
-    const icons: { [key: string]: string } = {
-      'pending': 'fa-clock',
-      'confirmed': 'fa-check-circle',
-      'shipped': 'fa-truck',
-      'delivered': 'fa-box-check',
-      'cancelled': 'fa-times-circle'
-    };
-    return icons[status] || 'fa-circle';
-  }
-
-  getTotalItems(order: Order): number {
-    return order.items.reduce((total, item) => total + item.quantity, 0);
-  }
-
-  getNextStatus(currentStatus: Order['status']): Order['status'] | null {
-    const statusFlow: { [key: string]: Order['status'] } = {
-      'pending': 'confirmed',
-      'confirmed': 'shipped',
-      'shipped': 'delivered'
-    };
-    return statusFlow[currentStatus] || null;
-  }
-
-  canUpdateStatus(order: AdminOrder): boolean {
-    return order.status !== 'cancelled' && order.status !== 'delivered';
-  }
-
-  // Helper method to safely update status
-  safeUpdateStatus(order: AdminOrder): void {
-    const nextStatus = this.getNextStatus(order.status);
-    if (nextStatus) {
-      this.updateOrderStatus(order, nextStatus);
-    }
-  }
-
-  // Add these methods to your component class
-
-  getTotalRevenue(): number {
-    return this.allOrders
-      .filter(order => order.status === 'delivered')
-      .reduce((total, order) => total + order.totalAmount, 0);
-  }
-
-  getShippedAmount(): number {
-    return this.allOrders
-      .filter(order => order.status === 'shipped')
-      .reduce((total, order) => total + order.totalAmount, 0);
-  }
-
-  getPendingAmount(): number {
-    return this.allOrders
-      .filter(order => order.status === 'pending' || order.status === 'confirmed')
-      .reduce((total, order) => total + order.totalAmount, 0);
-  }
-
-  getCancelledAmount(): number {
-    return this.allOrders
-      .filter(order => order.status === 'cancelled')
-      .reduce((total, order) => total + order.totalAmount, 0);
+  goBack() {
+    this.router.navigate(['/products']);
   }
 }

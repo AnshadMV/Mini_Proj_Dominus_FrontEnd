@@ -58,8 +58,8 @@
         src="https://plus.unsplash.com/premium_vector-1744204735077-1bd412e3e817?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=880"
         alt="Admin User">
       <div class="flex-1 min-w-0">
-        <p class="text-sm font-semibold text-gray-800 truncate"> {{ getAdminUser()?.name || 'Admin User' }}</p>
-        <p class="text-xs text-gray-500 truncate"> {{ getAdminUser()?.email || 'Admin User' }}</p>
+        <p class="text-sm font-semibold text-gray-800 truncate"> {{ getAdminUser()?.name || 'Admin' }}</p>
+        <!-- <p class="text-xs text-gray-500 truncate"> {{ getAdminUser()?.email || 'Admin' }}</p> -->
       </div>
     </div>
     <div class="flex items-center justify-center" *ngIf="isCollapsed">

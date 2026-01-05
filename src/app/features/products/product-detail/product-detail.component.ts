@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { Product } from 'src/app/core/models/product.model';
 import { CartService } from 'src/app/core/services/cart.service';
+import { CartBadgeService } from 'src/app/core/services/cartBadge.service';
 import { ProductService } from 'src/app/core/services/product.service';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { WishlistService } from 'src/app/core/services/wishlist.service';
@@ -22,12 +23,12 @@ export class ProductDetailComponent implements OnInit {
   private cartService = inject(CartService);
   private wishlistService = inject(WishlistService);
   private wishlistBadge = inject(WishlistBadgeService);
-
+  private cartBadge = inject(CartBadgeService);
 
   product: Product | null = null;
   selectedImageIndex = 0;
   isLoading = true;
-showRelatedProducts= false
+  showRelatedProducts = false
   wishlistProductIds = new Set<number>();
   cartProductMap = new Map<number, number>();
   cartQuantities = new Map<number, number>();
@@ -74,9 +75,13 @@ showRelatedProducts= false
 
         this.wishlistBadge.updatewishlistCount(this.wishlistProductIds.size);
       },
-      error: () => this.wishlistProductIds.clear()
+      error: () => {
+        this.wishlistProductIds.clear();
+        this.wishlistBadge.updatewishlistCount(0);
+      }
     });
   }
+
 
   loadCartStatus() {
     this.cartService.getMyCart().subscribe(res => {
@@ -89,6 +94,9 @@ showRelatedProducts= false
           this.cartQuantities.set(i.productId, i.quantity);
         });
       }
+
+      // OPTIONAL — only if you want badge update
+      this.cartBadge.updateCartCount(this.cartQuantities.size);
     });
   }
 
@@ -97,6 +105,7 @@ showRelatedProducts= false
   }
 
   addToCart(product: Product) {
+
     if (product.currentStock <= 0) {
       this.toast.info("Out of stock");
       return;
@@ -104,6 +113,7 @@ showRelatedProducts= false
 
     const cartItemId = this.cartProductMap.get(product.id);
 
+    // Already in cart → increase qty
     if (cartItemId) {
       const currentQty = this.cartQuantities.get(product.id) ?? 1;
       const nextQty = currentQty + 1;
@@ -121,17 +131,24 @@ showRelatedProducts= false
       return;
     }
 
+    // New item
     this.cartService.addToCart(product.id, 1).subscribe(() => {
       this.toast.success("Added to cart");
       this.loadCartStatus();
     });
   }
 
+
   toggleWishlist(product: Product) {
-    if (!product?.id) return;
+
+    if (!product?.id) {
+      this.toast.error("Invalid product");
+      return;
+    }
 
     this.wishlistService.toggle(product.id).subscribe({
       next: (res: any) => {
+
         if (res.statusCode === 200) {
           this.toast.success("Added to Wishlist");
           this.wishlistProductIds.add(product.id);
@@ -143,8 +160,11 @@ showRelatedProducts= false
 
         this.wishlistBadge.updatewishlistCount(this.wishlistProductIds.size);
       },
-      error: () => this.toast.error("Wishlist failed")
+      error: (err) => {
+        this.toast.error(err.error?.message || "Failed to update wishlist");
+      }
     });
+
   }
 
 

@@ -182,7 +182,9 @@
             <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
                 <!-- Loading -->
                 <div *ngIf="isLoading" class="flex justify-center items-center py-12">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black">
+
+                    </div>
                 </div>
 
 
@@ -207,9 +209,18 @@
                     </div>
                 </div>
                 <!-- Products Grid -->
-                <div *ngIf="!isLoading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <!-- Product Grid Loader -->
+                <div *ngIf="isLoading" class="flex justify-center items-center min-h-[300px]">
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-10 h-10 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
+                        <p class="text-sm text-gray-600">Loading products...</p>
+                    </div>
+                </div>
 
-                    <div *ngFor="let product of paginatedProducts"
+                <!-- Products Grid -->
+                <div *ngIf="!isLoading && filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+
+                    <div *ngFor="let product of filteredProducts"
                         class="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 group flex flex-col h-full">
                         <!-- Product Image Section -->
                         <div (click)="viewProductDetail(product)" class="cursor-pointer flex-grow">
@@ -223,10 +234,7 @@
                                         class="text-xs bg-blue-500 text-white px-3 py-1.5 rounded-full backdrop-blur-sm">
                                         {{ product.categoryName | titlecase }}
                                     </div>
-                                    <div *ngIf="product.topSelling"
-                                        class="text-xs bg-gradient-to-r from-red-500 to-orange-500 text-white px-3 py-1.5 rounded-full shadow-md">
-                                        🔥 Hot
-                                    </div>
+                                    
                                 </div>
 
                                 <!-- Stock status overlay -->
@@ -259,7 +267,7 @@
                                         {{ product.price | currency:'INR' }}
                                     </p>
                                     <span *ngIf="product.topSelling" class="text-sm text-amber-600 font-medium">
-                                        ⭐ Popular
+                                         🔥 Hot
                                     </span>
                                 </div>
                             </div>
@@ -293,7 +301,7 @@
                         <!-- Action Buttons -->
                         <div class="p-2 pt-0">
                             <div class="flex gap-3 items-center">
-                                <button (click)="viewProduct(product)"
+                                <button (click)="BuyProduct(product)"
                                     class="flex-1 bg-black text-white px-2 py-2 rounded-xl text-xs font-semibold hover:bg-gray-800 active:scale-95 transition-all duration-200">
                                     Buy Now
                                 </button>

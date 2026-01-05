@@ -1,14 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, map, of, switchMap } from 'rxjs';
-import { website_constants } from 'src/app/core/constants/app.constant';
-import { Order } from 'src/app/core/models/order.model';
-import { OrderItem } from 'src/app/core/models/orderItem.model';
-import { Product } from 'src/app/core/models/product.model';
-import { ProductWithQuantity } from 'src/app/core/models/productwithquantity.model';
-import { ShippingDetails } from 'src/app/core/models/shippingDetails.model';
+import { ProductWithQuantity } from 'src/app/core/models/base-models/productwithquantity';
 import { ToastService } from 'src/app/core/services/toast.service';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-product-buy',
@@ -16,245 +12,253 @@ import { ToastService } from 'src/app/core/services/toast.service';
   styleUrls: ['./product-buy.component.css']
 })
 export class ProductBuyComponent implements OnInit {
-  private productsUrl = website_constants.API.PRODUCTURL;
-  private usersUrl = website_constants.API.USERURL;
+  private productsUrl = environment.API.PRODUCTURL;
+  private usersUrl = environment.API.BASE_URL;
   products: ProductWithQuantity[] = [];
   TotalAmountofSelectedProduct: number = 0;
   userId: string = '';
   isProcessing: boolean = false;
   isLoading = false;
   showBuy: boolean = false;
+  productId!: number;
 
   constructor(
     private router: Router,
     private toast: ToastService,
-    private http: HttpClient
+    private http: HttpClient, private route: ActivatedRoute,
+
   ) {
-    const nav = this.router.getCurrentNavigation();
-    const received = nav?.extras?.state?.['product'];
-    this.products = Array.isArray(received) ? received : [received];
-    console.log('Received product:', this.products);
+
   }
 
   ngOnInit(): void {
-    this.CalculateTotalSelectedProduct();
+    const navState: any = history.state;
 
-    // Get current user ID
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    this.userId = currentUser?.id || '';
-  }
-
-  CalculateTotalSelectedProduct() {
-    if (!this.products || this.products.length === 0) {
-      this.TotalAmountofSelectedProduct = 0;
+    // CASE 1: Came from Cart / Buy Now
+    if (navState && navState.product) {
+      this.isLoading = true;
+      this.loadProductsFromCart(navState.product);
       return;
     }
 
-    // Calculate total by multiplying price with quantity
-    this.TotalAmountofSelectedProduct = this.products.reduce(
-      (total: number, product: ProductWithQuantity) => {
-        const price = Number(product.price) || 0;
-        const quantity = Number(product.quantity) || 1;
-        return total + (price * quantity);
+    // CASE 2: Direct Buy Page Route (/product-buy/:id)
+    this.productId = Number(this.route.snapshot.paramMap.get('id'));
+    if (this.productId) {
+      this.loadProduct();
+    }
+    // this.route.queryParams.subscribe(p => {
+    //   const orderId = p['orderId'];
+    //   const ref = p['ref'];
+
+    //   if (!orderId || !ref) return;
+
+    //   const dto = { paymentReference: ref };
+
+    //   this.http.post(`${this.usersUrl}/Order/PayBy_${orderId}`, dto,
+    //     { withCredentials: true })
+    //     .subscribe(() => {
+    //       this.toast.success("Payment Successful");
+    //       this.router.navigate(['/app-orders']);
+    //     });
+    // });
+
+  }
+  loadProduct() {
+    this.isLoading = true;
+
+    const product$ = this.http.get<any>(
+      `${this.productsUrl}/GetBy_${this.productId}`
+    );
+
+    const colors$ = this.http.get<any>(
+      `${environment.API.BASE_URL}/Colors/GetAll`
+    );
+
+    forkJoin([product$, colors$]).subscribe({
+      next: ([prodRes, colorRes]) => {
+
+        const product = prodRes.data || prodRes;
+
+        const allColors = colorRes.data || [];
+
+        // Build mapping using real DB colors
+        const mappedColors = (product.availableColors || [])
+          .map((name: string) => allColors.find((c: any) => c.name === name))
+          .filter((c: any) => c && c.isActive)   // ONLY ACTIVE COLORS
+          .map((c: any) => ({
+            colorId: c.id,
+            colorName: c.name,
+            hexCode: c.hexCode
+          }));
+
+        if (!mappedColors.length) {
+          this.toast.error("No active colors available for this product");
+          this.isLoading = false;
+          return;
+        }
+
+        this.products = [{
+          ...product,
+          quantity: 1,
+          availableColors: mappedColors,
+          selectedColorId: mappedColors[0].colorId
+        }];
+
+        this.CalculateTotalSelectedProduct();
+        this.isLoading = false;
       },
+      error: () => {
+        this.toast.error("Failed to load product");
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadProductsFromCart(cartProducts: any[]) {
+    const productRequests = cartProducts.map(p =>
+      this.http.get<any>(`${this.productsUrl}/GetBy_${p.id}`)
+    );
+
+    const colors$ = this.http.get<any>(
+      `${environment.API.BASE_URL}/Colors/GetAll`
+    );
+
+    forkJoin([forkJoin(productRequests), colors$]).subscribe({
+      next: ([productsRes, colorRes]) => {
+
+        const allColors = colorRes.data || [];
+
+        this.products = productsRes.map((res, index) => {
+          const product = res.data || res;
+
+          const mappedColors = (product.availableColors || [])
+            .map((name: string) =>
+              allColors.find((c: any) => c.name === name && c.isActive)
+            )
+            .filter(Boolean)
+            .map((c: any) => ({
+              colorId: c.id,
+              colorName: c.name,
+              hexCode: c.hexCode
+            }));
+
+          return {
+            ...product,
+            quantity: cartProducts[index].quantity,
+            availableColors: mappedColors,
+            selectedColorId: mappedColors[0]?.colorId
+          };
+        });
+
+        this.CalculateTotalSelectedProduct();
+        this.isLoading = false;
+      },
+      error: () => {
+        this.toast.error('Failed to load products');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  CalculateTotalSelectedProduct() {
+    this.TotalAmountofSelectedProduct = this.products.reduce(
+      (sum, p) => sum + (p.price * (p.quantity || 1)),
       0
     );
   }
 
-  confirmPurchace(): void {
-    // if (this.isProcessing) {
-    //   return;
-    // }
 
-    // if (!this.products || this.products.length === 0) {
-    //   this.toast.error("No products to purchase");
-    //   return;
-    // }
+  confirmPurchace() {
+    this.isProcessing = true;
 
-    // // Add debugging logs
-    // console.log('=== STOCK DEBUG INFO ===');
-    // this.products.forEach(product => {
-    //   console.log(`Product: ${product.name}, Current Stock: ${product.currentStock}, Quantity: ${product.quantity}, New Stock: ${product.currentStock === null ? 'unlimited' : (Number(product.currentStock) - Number(product.quantity || 1))}`);
-    // });
+    const createOrderDto = {
+      items: this.products.map(p => ({
+        productId: p.id,
+        colorId: p.selectedColorId!,   // always exists now
+        quantity: p.quantity || 1
+      }))
+    };
 
-    // // Treat null (or undefined) currentStock as "unlimited" => not out of currentStock
-    // const outOfStockProducts = this.products.filter(product => {
-    //   if (product.currentStock == null) { // null or undefined = unlimited
-    //     return false;
-    //   }
-    //   const availableStock = Number(product.currentStock) || 0;
-    //   const requestedQuantity = Number(product.quantity) || 1;
-    //   return availableStock < requestedQuantity;
-    // });
-
-    // if (outOfStockProducts.length > 0) {
-    //   const productNames = outOfStockProducts.map(p => p.name).join(', ');
-    //   this.toast.error(`Insufficient currentStock for: ${productNames}`);
-    //   return;
-    // }
-
-    // this.isProcessing = true;
-
-    // // Create an array of update requests for each product that actually tracks currentStock.
-    // // Skip products with null/undefined currentStock (unlimited).
-    // const currentStockUpdateRequests = this.products.map(product => {
-    //   if (product.currentStock == null) {
-    //     // No request for unlimited currentStock items (keep as null on server)
-    //     console.log(`Skipping currentStock update for ${product.name} (unlimited)`);
-    //     return null;
-    //   }
-
-    //   const availableStock = Number(product.currentStock) || 0;
-    //   const requestedQuantity = Number(product.quantity) || 1;
-
-    //   if (availableStock < requestedQuantity) {
-    //     // Shouldn't happen because of earlier check, but guard anyway
-    //     throw new Error(`Not enough currentStock for ${product.name}`);
-    //   }
-
-    //   const newStock = availableStock - requestedQuantity;
-    //   console.log(`Updating ${product.name}: ${availableStock} - ${requestedQuantity} = ${newStock}`);
-
-    //   return this.http.patch(`${this.productsUrl}/${product.id}`, { currentStock: newStock });
-    // }).filter(req => req !== null) as any[]; // filter out nulls
-
-    // const proceedWithOrder = () => {
-    //   return this.createOrder();
-    // };
-
-    // if (currentStockUpdateRequests.length === 0) {
-    //   // No currentStock updates required (all unlimited) — proceed directly
-    //   proceedWithOrder().subscribe({
-    //     next: () => {
-    //       this.toast.success("Purchase Confirmed Successfully!");
-    //       this.isProcessing = false;
-    //       this.router.navigate(['/app-orders']);
-    //     },
-    //     error: (err) => {
-    //       console.error('Error during purchase:', err);
-    //       this.toast.error("Purchase failed. Please try again.");
-    //       this.isProcessing = false;
-    //     }
-    //   });
-    // } else {
-    //   // Execute all currentStock updates then create order
-    //   forkJoin(currentStockUpdateRequests).pipe(
-    //     switchMap((responses) => {
-    //       console.log('Stock update responses:', responses);
-    //       return proceedWithOrder();
-    //     }),
-    //   ).subscribe({
-    //     next: () => {
-    //       this.toast.success("Purchase Confirmed Successfully!");
-    //       this.isProcessing = false;
-    //       this.router.navigate(['/app-orders']);
-    //     },
-    //     error: (err) => {
-    //       console.error('Error during purchase:', err);
-    //       this.toast.error("Purchase failed. Please try again.");
-    //       this.isProcessing = false;
-    //     }
-    //   });
-    // }
-  }
-
-  createOrder() {
-    // Get user details for shipping information
-    // return this.http.get<any>(`${this.usersUrl}/${this.userId}`).pipe(
-    //   switchMap(user => {
-    //     // Create order items from products
-    //     const orderItems: OrderItem[] = this.products.map(product => ({
-    //       productId: product.id,
-    //       name: product.name,
-    //       price: product.price,
-    //       quantity: product.quantity || 1,
-    //       image: product.images[0],
-    //       color: product.colors[0] || 'default',
-    //       category: product.category
-    //     }));
-
-    //     // Generate order ID
-    //     const orderId = 'ORD' + Date.now() + Math.random().toString(36).substr(2, 5).toUpperCase();
-
-    //     // Use user's shippingDetails if available, otherwise provide defaults
-    //     const shippingDetails: ShippingDetails = user.shippingDetails || {
-    //       fullName: user.name || 'Customer',
-    //       address: 'Not specified',
-    //       city: 'Not specified',
-    //       state: 'Not specified',
-    //       pincode: '000000',
-    //       phone: 'Not specified',
-    //       email: user.email || 'Not specified'
-    //     };
-
-    //     // Create new order
-    //     const newOrder: Order = {
-    //       id: 'order_' + Date.now(),
-    //       userId: this.userId,
-    //       orderId: orderId,
-    //       orderDate: new Date().toLocaleDateString('en-US', {
-    //         year: 'numeric',
-    //         month: 'long',
-    //         day: 'numeric',
-    //         hour: '2-digit',
-    //         minute: '2-digit'
-    //       }),
-    //       items: orderItems,
-    //       shippingDetails: shippingDetails,
-    //       paymentMethod: 'Online Payment', // You can make this dynamic
-    //       totalAmount: this.TotalAmountofSelectedProduct,
-    //       status: 'confirmed',
-    //       estimatedDelivery: this.calculateEstimatedDelivery()
-    //     };
-
-    //     // Add order to user's orders array
-    //     const updatedOrders = [...(user.orders || []), newOrder];
-
-    //     // Update user with new order
-    //     return this.http.patch(`${this.usersUrl}/${this.userId}`, {
-    //       orders: updatedOrders
-    //     });
-    //   })
-    // );
-  }
-
-  calculateEstimatedDelivery(): string {
-    const deliveryDate = new Date();
-    deliveryDate.setDate(deliveryDate.getDate() + 7); // 7 days from now
-    return deliveryDate.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
-
-  clearCartItems(): void {
-    this.http.get<any>(`${this.usersUrl}/${this.userId}`).subscribe({
-      next: (user) => {
-        const productIds = this.products.map(p => p.id);
-        const updatedCart = (user.cart || []).filter(
-          (item: any) => !productIds.includes(item.productId)
-        );
-
-        this.http.patch(`${this.usersUrl}/${this.userId}`, { cart: updatedCart }).subscribe({
-          next: () => {
-            this.toast.success("Purchase Confirmed Successfully!");
-            this.isProcessing = false;
-            this.router.navigate(['/app-cart']); // Navigate to products page or order confirmation
-          },
-          error: (err) => {
-            console.error('Error clearing cart:', err);
-            this.toast.success("Purchase confirmed but cart update failed");
-            this.isProcessing = false;
-          }
-        });
+    this.http.post<any>(`${this.usersUrl}/Order/Add`, createOrderDto, {
+      withCredentials: true
+    }).subscribe({
+      next: res => {
+        const orderId = res.data.orderId;
+        this.router.navigate(['/app-payment', orderId]);
       },
-      error: (err) => {
-        console.error('Error fetching user:', err);
-        this.toast.success("Purchase confirmed but cart update failed");
+      error: err => {
+        this.toast.error(err.error?.message || "Order failed");
         this.isProcessing = false;
       }
     });
+  }
+  startUroPayment(orderId: number) {
+    // OPEN A SAFE BLANK WINDOW FIRST (Browser won't block this)
+    const qrWindow = window.open('', '_blank');
+
+    this.http.post<any>(
+      `${this.usersUrl}/Order/CreatePayment/${orderId}`,
+      {},
+      { withCredentials: true }
+    )
+      .subscribe({
+        next: res => {
+          const data = res.data;
+
+          if (!data) {
+            this.toast.error("Payment session failed");
+            this.isProcessing = false;
+            qrWindow?.close();
+            return;
+          }
+
+          const upiLink = data.upiString;
+          const qr = data.qrCode;
+
+          const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+          if (isMobile && upiLink) {
+            window.location.href = upiLink;
+          }
+          else {
+            // Desktop → Show QR inside popup window
+            qrWindow!.document.write(`
+          <html>
+            <head>
+              <title>UPI Payment</title>
+            </head>
+            <body style="display:flex;justify-content:center;align-items:center;height:100vh;background:#111">
+              <img src="${qr}" style="width:350px;height:350px;border-radius:10px" />
+            </body>
+          </html>
+        `);
+
+            this.toast.info("Scan QR with any UPI app");
+          }
+        },
+
+        error: () => {
+          this.toast.error("Payment failed to start");
+          this.isProcessing = false;
+          qrWindow?.close();
+        }
+      });
+  }
+
+
+
+
+
+  createOrder() {
+
+  }
+
+  calculateEstimatedDelivery() {
+
+  }
+
+  clearCartItems(): void {
+
   }
 
   goBack() {

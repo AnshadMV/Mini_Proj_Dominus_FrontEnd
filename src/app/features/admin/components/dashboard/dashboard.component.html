@@ -4,13 +4,13 @@
   <div class="flex justify-between items-center">
     <div>
       <h1 class="text-2xl font-bold text-gray-900">Dashboard Analytics</h1>
-      <p class="text-gray-600">Real-time overview of your store performance</p>
+      <!-- <p class="text-gray-600">Real-time overview of your store performance</p> -->
     </div>
-    <!-- <button (click)="refreshDashboard()"
+    <button (click)="refreshDashboard()"
       class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
       <i class="fa-solid fa-refresh"></i>
       <span>Refresh</span>
-    </button> -->
+    </button>
   </div>
 
   <!-- Loading State -->
@@ -27,13 +27,16 @@
         <div class="flex-1">
           <p class="text-sm font-medium text-gray-600">{{ stat.title }}</p>
           <p class="text-2xl font-bold text-gray-900 mt-1">{{ stat.value }}</p>
-          <p class="text-sm mt-1 text-black" [class.text-green-600]="stat.change.includes('+')"
-            [class.text-red-600]="stat.change.includes('-')">
+          <!-- <p class="text-sm mt-1" [ngClass]="{
+            'text-green-600': stat.change.includes('+'),
+            'text-red-600': stat.change.includes('-'),
+            'text-black': !stat.change.includes('+') && !stat.change.includes('-')
+          }">
             {{ stat.change }}
-          </p>
+          </p> -->
           <p *ngIf="stat.description" class="text-xs text-gray-500 mt-2">{{ stat.description }}</p>
         </div>
-        <div [class]="stat.color + ' rounded-lg p-3 border'">
+        <div [class]="stat.color + ' rounded-lg p-3'">
           <i [class]="stat.icon + ' text-white text-lg'"></i>
         </div>
       </div>
@@ -60,6 +63,9 @@
           <div class="h-64">
             <canvas id="categoriesChart"></canvas>
           </div>
+          <div *ngIf="categories.length === 0" class="text-center py-8">
+            <p class="text-gray-500 text-sm">No category data available</p>
+          </div>
         </div>
 
         <!-- Order Status Chart -->
@@ -67,6 +73,9 @@
           <h3 class="text-lg font-medium text-gray-900 mb-4">Order Status</h3>
           <div class="h-64">
             <canvas id="orderStatusChart"></canvas>
+          </div>
+          <div *ngIf="allOrders.length === 0" class="text-center py-8">
+            <p class="text-gray-500 text-sm">No order data available</p>
           </div>
         </div>
       </div>
@@ -96,7 +105,7 @@
                   {{ order.amount | currency:'INR' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {{ order.date | date:'shortDate' }}
+                  {{ (order.date | date:'shortDate') || 'N/A' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span
@@ -121,36 +130,30 @@
       <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-lg font-medium text-gray-900 mb-4">Stock Overview</h3>
         <div class="h-64">
-          <canvas id="currentStockChart"></canvas>
+          <canvas id="stockChart"></canvas>
         </div>
       </div>
 
       <!-- Top Selling Products -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-        <!-- Header -->
+      <!-- <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-4 py-3 border-b border-gray-200">
           <h3 class="text-md font-medium text-gray-900">Top Selling Products</h3>
         </div>
-
-        <!-- Product List -->
         <div class="p-4 space-y-3">
           <div *ngFor="let product of topSellingProducts; let i = index"
             class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 bg-gray-50 rounded-lg gap-2 sm:gap-0">
-            <!-- Product Info -->
             <div class="flex items-center space-x-3 min-w-0">
               <span
                 class="w-6 h-6 bg-blue-500 text-white rounded-full text-xs flex items-center justify-center flex-shrink-0">
                 {{ i + 1 }}
               </span>
               <div class="min-w-0">
-                <p class="text-sm font-medium text-gray-900 truncate max-w-[150px] sm:max-w-[200px] md:max-w-[250px]">
+                <p class="text-sm font-medium text-gray-900 truncate max-w-[150px] sm:max-w-[200px]">
                   {{ product.name }}
                 </p>
                 <p class="text-xs text-gray-500">{{ product.sales }} sold</p>
               </div>
             </div>
-
-            <!-- Revenue + Stock -->
             <div class="text-left sm:text-right">
               <p class="text-sm font-medium text-gray-900">
                 {{ product.revenue | currency:'INR' }}
@@ -161,18 +164,16 @@
               </span>
             </div>
           </div>
-
-          <!-- Empty State -->
           <div *ngIf="topSellingProducts.length === 0" class="text-center py-4">
             <p class="text-gray-500 text-sm">No top selling products</p>
           </div>
         </div>
-      </div>
+      </div> -->
 
-      <!-- Total Users Card -->
+      <!-- User Statistics -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-4 py-3 border-b border-gray-200">
-          <h3 class="text-md font-medium text-gray-900">User Summary</h3>
+          <h3 class="text-md font-medium text-gray-900">User Statistics</h3>
         </div>
         <div class="p-4 space-y-3">
           <div class="flex justify-between items-center p-3 bg-indigo-50 rounded-lg">
@@ -215,6 +216,7 @@
           </div>
         </div>
       </div>
+
       <!-- Low Stock Alert -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="px-4 py-3 border-b border-gray-200">
@@ -222,14 +224,17 @@
         </div>
         <div class="p-4 space-y-2">
           <div *ngFor="let product of lowStockProducts"
-            class="flex justify-between items-center p-2 bg-red-50 rounded-lg">
-            <p class="text-sm font-medium text-gray-900 truncate flex-1">{{ product.name }}</p>
-            <span [class]="'px-2 py-1 text-xs rounded-full ' + getStockStatusClass(product.currentStock)">
+            class="flex justify-between items-center p-3 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-900 truncate">{{ product.name }}</p>
+            </div>
+            <span [class]="'px-3 py-1 text-xs font-semibold rounded-full ' + getStockStatusClass(product.currentStock)">
               {{ product.currentStock }} left
             </span>
           </div>
-          <div *ngIf="lowStockProducts.length === 0" class="text-center py-2">
-            <p class="text-green-600 text-sm">All products are well currentStocked</p>
+          <div *ngIf="lowStockProducts.length === 0" class="text-center py-4">
+            <i class="fa-solid fa-check-circle text-green-500 text-xl mb-2"></i>
+            <p class="text-green-600 text-sm font-medium">All products are well stocked</p>
           </div>
         </div>
       </div>
@@ -240,26 +245,33 @@
   <div *ngIf="!isLoading" class="bg-white rounded-lg shadow-sm border border-gray-200">
     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
       <h3 class="text-lg font-bold text-gray-900">Recent Activity</h3>
-      <span class="text-xs text-gray-500">Live updates</span>
+      <!-- <span class="text-xs text-gray-500">Live updates every 30 seconds</span> -->
     </div>
     <div class="p-4">
       <div *ngIf="recentActivities.length > 0" class="space-y-3">
         <div *ngFor="let activity of recentActivities"
-          class="flex items-start space-x-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-          <div [class]="'mt-1 w-2 h-2 rounded-full flex-shrink-0 ' + 
-                          (activity.type === 'order' ? 'bg-blue-500' : 
-                           activity.type === 'currentStock' ? 'bg-orange-500' :
-                           activity.type === 'user' ? 'bg-green-500' : 'bg-purple-500')">
+          class="flex items-start space-x-4 p-4 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+          <div [class]="'mt-1 p-2 rounded-lg ' + 
+                        (activity.type === 'order' ? 'bg-blue-100 text-blue-600' : 
+                         activity.type === 'currentStock' ? 'bg-orange-100 text-orange-600' :
+                         activity.type === 'user' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600')">
+            <i [class]="'text-sm ' + 
+                        (activity.type === 'order' ? 'fa-shopping-cart' : 
+                         activity.type === 'currentStock' ? 'fa-exclamation-triangle' :
+                         activity.type === 'user' ? 'fa-user-plus' : 'fa-info-circle')"></i>
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-sm text-gray-900 font-medium">{{ activity.action }}</p>
-            <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
+            <p class="text-xs text-gray-500 mt-1">
+              <i class="fa-solid fa-clock mr-1"></i>{{ activity.time }}
+            </p>
           </div>
-          <div [class]="'px-2 py-1 rounded-full text-xs font-medium ' +
-                        (activity.type === 'order' ? 'bg-blue-50 text-blue-700' : 
-                         activity.type === 'currentStock' ? 'bg-orange-50 text-orange-700' :
-                         activity.type === 'user' ? 'bg-green-50 text-green-700' : 'bg-purple-50 text-purple-700')">
-            {{ activity.type }}
+          <div [class]="'px-3 py-1 rounded-full text-xs font-medium ' +
+                        (activity.type === 'order' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 
+                         activity.type === 'currentStock' ? 'bg-orange-50 text-orange-700 border border-orange-100' :
+                         activity.type === 'user' ? 'bg-green-50 text-green-700 border border-green-100' : 
+                         'bg-purple-50 text-purple-700 border border-purple-100')">
+            {{ activity.type | titlecase }}
           </div>
         </div>
       </div>

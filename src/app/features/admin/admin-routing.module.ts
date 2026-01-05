@@ -15,7 +15,10 @@ const routes: Routes = [
         // canActivate: [AdminGuard],
         children: [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-            { path: 'dashboard', component: DashboardComponent }, // Clean route
+            { path: 'dashboard',
+                 component: DashboardComponent,
+                // loadChildren: () => import('./components/dashboard/dashboard.module').then(m => m.DashBoardModule),
+                }, // Clean route
             {
                 path: 'products',
                 loadChildren: () => import('./components/products/admin-product.module').then(m => m.AdminProductModule),

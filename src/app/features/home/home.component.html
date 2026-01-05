@@ -84,14 +84,14 @@
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 mt-6 fade-in">
-                <div routerLink="/app-products/product-list"
+                <div routerLink="/products/product-list"
                     class="relative flex items-center bg-transparent border-1 border-white rounded-full py-2 px-6 hover-lift">
                     <input type="text" placeholder="Search Your Dream..."
                         class="bg-transparent text-white border-none outline-none w-full pr-10" />
                     <i class="fa-solid fa-magnifying-glass absolute right-3 text-white"></i>
                 </div>
 
-                <button routerLink="/app-products/product-list"
+                <button routerLink="/products/product-list"
                     class="bg-white text-black px-8 py-3 rounded-full font-semibold text-lg hover:bg-black hover:text-white transition-all duration-300 transform hover:scale-105 flex items-center gap-2 pulse-cta">
                     Discover Collection
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -108,74 +108,7 @@
     </div>
 
     <!-- Recently Launched Section -->
-    <section class="bg-white py-20">
-        <div class="container mx-auto px-4">
-            <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-center mb-10 space-y-4 sm:space-y-0 slide-in-left">
-                <h2 class="text-3xl font-bold text-black text-center sm:text-left">Recently Launched</h2>
-                <button routerLink="/app-products/product-list"
-                    class="bg-black text-white px-6 py-2 rounded-full hover:bg-gray-800 transition hover-lift">
-                    All Collection
-                </button>
-            </div>
-
-            <!-- Skeleton Loading -->
-            <div *ngIf="showSkeleton" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div *ngFor="let item of getSkeletonArray(productCount)" 
-                     class="bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-200">
-                    <div class="p-6">
-                        <div class="skeleton h-4 w-20 mb-4"></div>
-                        <div class="skeleton h-6 w-3/4 mb-2"></div>
-                        <div class="skeleton h-8 w-1/2 mb-4"></div>
-                        <div class="flex justify-between mb-4">
-                            <div class="skeleton h-4 w-16"></div>
-                            <div class="skeleton h-4 w-16"></div>
-                            <div class="skeleton h-4 w-16"></div>
-                        </div>
-                    </div>
-                    <div class="h-56 bg-gray-200 skeleton"></div>
-                </div>
-            </div>
-
-            <!-- Product Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Product Card Loop -->
-                <div *ngFor="let p of products; let i = index"
-                    class="bg-white shadow-lg rounded-2xl overflow-hidden border border-gray-200 product-card hover-lift fade-in"
-                    [style.animation-delay]="i * 0.1 + 's'">
-                    <!-- Card Top Section -->
-                    <div class="px-6 pt-6">
-                        <div class="text-sm bg-black text-white px-3 py-1 rounded-full w-fit mb-4">
-                            No: {{ i + 1 }}
-                        </div>
-                        <h3 class="text-xl font-semibold text-black mb-2">{{ p.name }}</h3>
-                        <p class="text-2xl font-bold text-black mb-4">{{ p.price | currency:'INR' }}</p>
-
-                        <!-- Car Info Grid -->
-                        <div class="flex justify-between text-sm text-gray-600 mb-4">
-                            <div class="text-center">
-                                <p class="font-semibold">{{ p.topSelling }}</p>
-                                <p class="text-xs">Top Selling</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="font-semibold">{{ p.colors }}</p>
-                                <p class="text-xs">Colors</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="font-semibold">{{ p.currentStock }}</p>
-                                <p class="text-xs">Availability</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Image Section -->
-                    <div class="h-56 bg-black flex items-center justify-center">
-                        <img [src]="p.images" [alt]="p.name" class="h-full object-contain transition-transform duration-500 hover:scale-105" />
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    
 
     <!-- Scrollable Service Cards Section -->
     <section class="py-40 bg-black text-white">

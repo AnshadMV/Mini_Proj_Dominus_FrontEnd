@@ -29,7 +29,6 @@ export class LoginComponent implements OnInit {
     this.assetsService.getLogo().subscribe(url => {
       this.logoUrl = url;
     });
-
   }
 
   togglePasswordVisibility(): void {

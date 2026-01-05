@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from 'src/app/core/services/cart.service';
 import { CartBadgeService } from 'src/app/core/services/cartBadge.service';
@@ -17,6 +17,7 @@ export class CartComponent implements OnInit {
   TotalAmountofAllProduct = 0;
   showRelated = false;
   productsStockMap = new Map<number, number>();
+  private cartBadgeService = inject(CartBadgeService);
 
   constructor(
     private cartService: CartService,
@@ -63,7 +64,6 @@ export class CartComponent implements OnInit {
             name: i.productName,
             price: i.price,
             images: i.images,
-
           }
         }));
 
@@ -89,7 +89,11 @@ export class CartComponent implements OnInit {
     }
     this.cartService
       .updateItem(item.id, nextQty)
-      .subscribe(() => this.loadCartItems());
+      .subscribe(() => {
+        this.loadCartItems()
+
+      }
+      );
   }
 
 
@@ -111,11 +115,28 @@ export class CartComponent implements OnInit {
   }
 
 
-  buyProduct(product: any) {
-    this.router.navigate(['/products/product-buy'], {
-      state: { product: [{ ...product, quantity: 1 }] }
+  buyProduct(item: any) {
+    const payload = [
+      {
+        ...item.product,
+        quantity: item.quantity
+      }
+    ];
+
+    this.router.navigate(
+      ['/products/product-buy', item.product.id],
+      { state: { product: payload } }
+    );
+
+    this.cartService.removeItem(item.id).subscribe(() => {
+      this.cartBadge.updateCartCount(this.cartItems.length - 1);
+      this.loadCartItems();
     });
   }
+
+
+
+
 
   proceedToCheckout() {
     const products = this.cartItems.map(i => ({
@@ -123,10 +144,20 @@ export class CartComponent implements OnInit {
       quantity: i.quantity
     }));
 
-    this.router.navigate(['/products/product-buy'], {
-      state: { product: products }
+    const firstProductId = products[0].id;
+
+    this.router.navigate(
+      ['/products/product-buy', firstProductId],
+      { state: { product: products } }
+    );
+
+    this.cartService.clearCart().subscribe(() => {
+      this.cartBadge.updateCartCount(0);
+      this.loadCartItems();
     });
   }
+
+
 
   goBack() {
     this.router.navigate(['/products']);

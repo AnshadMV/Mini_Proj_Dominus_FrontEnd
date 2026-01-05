@@ -168,7 +168,19 @@ FORGOT PASSWORD
 
 
 
+    sendOtp(email: string) {
+        return this.http.post<ApiResponse<string>>(
+            `${this.apiUrl}/send-otp`,
+            { email }
+        );
+    }
 
+    resetPasswordforNotloggined(email: string, otp: string, newPassword: string) {
+        return this.http.post<ApiResponse<string>>(
+            `${this.apiUrl}/reset-password`,
+            { email, otp, newPassword }
+        );
+    }
 
 
 }

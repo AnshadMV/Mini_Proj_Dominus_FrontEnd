@@ -1,7 +1,7 @@
 <section class="bg-white py-8">
   <div class="container mx-auto px-4">
     <!-- Grid Layout: 1 column on small screens, 12 cols on medium+ -->
-<div class="grid grid-cols-1 md:grid-cols-12 gap-3 h-[calc(100vh-6rem)] overflow-hidden">
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-3 h-[calc(100vh-6rem)] overflow-hidden">
 
       <!-- Left Sidebar: Filters & Header (3/12) -->
       <div class="md:col-span-3 space-y-4">
@@ -31,11 +31,11 @@
             </button>
 
             <!-- Filters -->
-            <button
+            <!-- <button
               class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
               <i class="fa-solid fa-filter fa-bounce text-purple-400"></i>
               <span>Related Pd</span>
-            </button>
+            </button> -->
           </div>
         </div>
 
@@ -49,7 +49,7 @@
       </div>
 
       <!-- Right Content: Products Grid (9/12) -->
-            <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
+      <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
         <!-- Loading State -->
         <div *ngIf="isLoading" class="text-center py-12">
           <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
@@ -65,40 +65,48 @@
         </div>
         <!-- Orders Content -->
         <div *ngIf="!isLoading">
+
+
           <!-- Filter Tabs -->
-          <div class="bg-white rounded-xl shadow-sm p-2 mb-6 flex flex-wrap gap-2">
-            <button (click)="filterOrders('all')" [class.bg-black]="filterStatus === 'all'"
-              [class.text-white]="filterStatus === 'all'" [class.text-gray-700]="filterStatus !== 'all'"
-              class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100">
-              All Orders ({{ orders.length }})
-            </button>
-            <button (click)="filterOrders('pending')" [class.bg-black]="filterStatus === 'pending'"
-              [class.text-white]="filterStatus === 'pending'" [class.text-gray-700]="filterStatus !== 'pending'"
-              class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100">
+          <div class="bg-white rounded-xl shadow-sm p-3 mb-6 flex flex-wrap gap-2">
+
+            <button (click)="filterOrders('PendingPayment')"
+              class="px-4 py-2 rounded-lg text-sm font-medium transition-all border" [ngClass]="filterStatus === 'PendingPayment'
+      ? 'bg-yellow-500 text-white border-yellow-500'
+      : 'bg-white text-gray-700 border-gray-300 hover:bg-yellow-50'">
               Pending
             </button>
 
-            <button (click)="filterOrders('confirmed')" [class.bg-black]="filterStatus === 'confirmed'"
-              [class.text-white]="filterStatus === 'confirmed'" [class.text-gray-700]="filterStatus !== 'confirmed'"
-              class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100">
-              Confirmed
+            <button (click)="filterOrders('Paid')"
+              class="px-4 py-2 rounded-lg text-sm font-medium transition-all border" [ngClass]="filterStatus === 'Paid'
+      ? 'bg-blue-600 text-white border-blue-600'
+      : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50'">
+              Paid
             </button>
-             <button (click)="filterOrders('cancelled')" [class.bg-black]="filterStatus === 'cancelled'"
-              [class.text-white]="filterStatus === 'cancelled'" [class.text-gray-700]="filterStatus !== 'cancelled'"
-              class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100">
-              Cancelled
-            </button>
-            <button (click)="filterOrders('shipped')" [class.bg-black]="filterStatus === 'shipped'"
-              [class.text-white]="filterStatus === 'shipped'" [class.text-gray-700]="filterStatus !== 'shipped'"
-              class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100">
+
+            <button (click)="filterOrders('Shipped')"
+              class="px-4 py-2 rounded-lg text-sm font-medium transition-all border" [ngClass]="filterStatus === 'Shipped'
+      ? 'bg-purple-600 text-white border-purple-600'
+      : 'bg-white text-gray-700 border-gray-300 hover:bg-purple-50'">
               Shipped
             </button>
-            <button (click)="filterOrders('delivered')" [class.bg-black]="filterStatus === 'delivered'"
-              [class.text-white]="filterStatus === 'delivered'" [class.text-gray-700]="filterStatus !== 'delivered'"
-              class="px-4 py-2 rounded-lg font-medium transition-colors hover:bg-gray-100">
+
+            <button (click)="filterOrders('Delivered')"
+              class="px-4 py-2 rounded-lg text-sm font-medium transition-all border" [ngClass]="filterStatus === 'Delivered'
+      ? 'bg-green-600 text-white border-green-600'
+      : 'bg-white text-gray-700 border-gray-300 hover:bg-green-50'">
               Delivered
             </button>
+
+            <button (click)="filterOrders('Cancelled')"
+              class="px-4 py-2 rounded-lg text-sm font-medium transition-all border" [ngClass]="filterStatus === 'Cancelled'
+      ? 'bg-red-600 text-white border-red-600'
+      : 'bg-white text-gray-700 border-gray-300 hover:bg-red-50'">
+              Cancelled
+            </button>
+
           </div>
+
 
           <!-- Orders List -->
           <div *ngIf="filteredOrders.length > 0; else noOrders" class="space-y-4">
@@ -109,7 +117,9 @@
               <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
                 <div class="flex flex-wrap justify-between items-center gap-4">
                   <div>
-                    <h3 class="font-semibold text-black text-lg">{{ order.orderId }}</h3>
+                    <h3 class="font-semibold text-black text-lg"> OrderId :{{ order.orderId }}</h3>
+                    <!-- <h3 class="font-semibold text-black text-lg">{{  }} -->
+
                     <p class="text-sm text-gray-600">Placed on {{ order.orderDate }}</p>
                   </div>
                   <div class="flex items-center gap-3">
@@ -131,18 +141,42 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <!-- Items Preview -->
                   <div class="md:col-span-2">
-                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Items ({{
-                      getTotalItems(order) }})</h4>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">{{
+                      getTotalItems(order) }}</h4>
                     <div class="flex gap-2 overflow-x-auto pb-2">
                       <div *ngFor="let item of order.items.slice(0, 4)"
                         class="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
                         <img [src]="item.image" [alt]="item.name" class="w-full h-full object-contain">
+
                       </div>
+
                       <div *ngIf="order.items.length > 4"
                         class="flex-shrink-0 w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
                         <span class="text-sm font-semibold text-gray-600">+{{ order.items.length
                           - 4 }}</span>
                       </div>
+                      <div class="ml-3 space-y-1">
+                        <div class="flex items-center gap-2">
+                          <span class="text-gray-500 text-sm">Name:</span>
+                          <span class="font-semibold text-gray-900">{{ order.items[0]?.name }}</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          <span class="text-gray-500 text-sm">Category:</span>
+                          <span class="font-semibold text-gray-900">{{ order.items[0]?.category }}</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          <span class="text-gray-500 text-sm">Color:</span>
+                          <span class="font-semibold text-gray-900">{{ order.items[0]?.color }}</span>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                          <span class="text-gray-500 text-sm">Quantity:</span>
+                          <span class="font-semibold text-gray-900">{{ order.items[0]?.quantity }}</span>
+                        </div>
+                      </div>
+
                     </div>
                   </div>
 
@@ -158,9 +192,9 @@
                       <p class="text-sm font-medium text-gray-900 uppercase">{{
                         order.paymentMethod }}</p>
                     </div>
-                    <div *ngIf="order.estimatedDelivery">
+                    <div *ngIf="order.shippingAddress">
                       <p class="text-xs text-gray-500">Estimated Delivery</p>
-                      <p class="text-sm font-medium text-gray-900">{{ order.estimatedDelivery }}
+                      <p class="text-sm font-medium text-gray-900">{{ order.shippingAddress }}
                       </p>
                     </div>
                   </div>
@@ -176,8 +210,11 @@
                 <i class="fa-solid fa-shopping-bag text-3xl text-gray-400"></i>
               </div>
               <h3 class="text-xl font-semibold text-gray-700 mb-2">
-                {{ filterStatus === 'all' ? 'No orders yet' : 'No ' + filterStatus + ' orders' }}
+                {{ filterStatus === 'all'
+                ? 'No orders yet'
+                : 'No ' + filterStatus + ' orders' }}
               </h3>
+
               <p class="text-gray-500 mb-6">
                 {{ filterStatus === 'all' ? 'Start shopping to see your orders here' : 'You don\'t have
                 any ' + filterStatus + ' orders' }}
@@ -222,14 +259,7 @@
                     <p class="text-gray-500">Order Date</p>
                     <p class="font-medium text-gray-900">{{ selectedOrder.orderDate }}</p>
                   </div>
-                  <div *ngIf="selectedOrder.estimatedDelivery">
-                    <p class="text-gray-500">Estimated Delivery</p>
-                    <p class="font-medium text-gray-900">{{ selectedOrder.estimatedDelivery }}</p>
-                  </div>
-                  <div *ngIf="selectedOrder.trackingNumber">
-                    <p class="text-gray-500">Tracking Number</p>
-                    <p class="font-medium text-gray-900">{{ selectedOrder.trackingNumber }}</p>
-                  </div>
+
                 </div>
               </div>
 
@@ -262,18 +292,9 @@
               <div>
                 <h3 class="font-semibold text-black mb-4">Shipping Details</h3>
                 <div class="bg-gray-50 rounded-xl p-4 space-y-2">
-                  <p class="font-medium text-gray-900">{{ selectedOrder.shippingDetails.fullName }}
+                  <p class="font-medium text-gray-900">{{ selectedOrder.shippingAddress }}
                   </p>
-                  <p class="text-sm text-gray-600">{{ selectedOrder.shippingDetails.address }}</p>
-                  <p class="text-sm text-gray-600">
-                    {{ selectedOrder.shippingDetails.city }}, {{ selectedOrder.shippingDetails.state
-                    }} - {{ selectedOrder.shippingDetails.pincode }}
-                  </p>
-                  <p class="text-sm text-gray-600">Phone: {{ selectedOrder.shippingDetails.phone }}
-                  </p>
-                  <p class="text-sm text-gray-600" *ngIf="selectedOrder.shippingDetails.email">
-                    Email: {{ selectedOrder.shippingDetails.email }}
-                  </p>
+
                 </div>
               </div>
 
@@ -307,7 +328,7 @@
 
               <!-- Action Buttons -->
               <div class="flex gap-3 pt-4"
-                *ngIf="selectedOrder.status === 'pending' || selectedOrder.status === 'confirmed'">
+                *ngIf="selectedOrder.status === 'PendingPayment'">
                 <button (click)="cancelOrder(selectedOrder)"
                   class="flex-1 bg-red-600 text-white px-6 py-3 rounded-full font-medium hover:bg-red-700 transition-colors">
                   Cancel Order

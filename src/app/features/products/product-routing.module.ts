@@ -4,6 +4,7 @@ import { ProductListComponent } from './product-list/product-list.component';
 import { ProductDetailComponent } from './product-detail/product-detail.component';
 import { ProductBuyComponent } from './product-buy/product-buy.component';
 import { AuthGuard } from 'src/app/core/guards/auth.guard';
+import { UserGuard } from 'src/app/core/guards/user.guard';
 // import { AuthGuard } from 'src/app/core/guards/auth.guard';
 
 const routes: Routes = [
@@ -18,15 +19,16 @@ const routes: Routes = [
     // canActivate: [AuthGuard]
   },
   {
-    path: 'product-buy',
+    path: 'product-buy/:id',
     component: ProductBuyComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, UserGuard]
   },
   {
     path: '',
     redirectTo: 'product-list',
     pathMatch: 'full'
-  }
+  },
+
 ];
 
 @NgModule({

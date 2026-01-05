@@ -1,17 +1,17 @@
-import { OrderItem } from "./orderItem.model";
-import { ShippingDetails } from "./shippingDetails.model";
-
-// Interface for Order
 export interface Order {
-  id: string;
-  userId: string;
-  orderId: string;
+  orderId: number;
   orderDate: string;
-  items: OrderItem[];
-  shippingDetails: ShippingDetails;
-  paymentMethod: string;
+  status: string;
   totalAmount: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
-  trackingNumber?: string;
-  estimatedDelivery?: string;
+  shippingAddress: string; 
+  orderDateRaw: Date;
+  paymentMethod: string;
+  items: {
+    name: string;
+    image: string;
+    quantity: number;
+    price: number;
+    color: string;
+    category: string;
+  }[];
 }

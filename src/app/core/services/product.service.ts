@@ -22,11 +22,18 @@ export class ProductService {
             map(res => res.data)
         );
     }
+    getAllProductsUser(): Observable<Product[]> {
+        return this.http.get<any>(`${this.prod_url}/User/GetAll`).pipe(
+            map(res => res.data)
+        );
+    }
 
     filterProducts(params: any) {
-        return this.http.get<any>(`${this.prod_url}/Filter_Sort`, { params })
-            .pipe(map(res => res.data));
+        return this.http
+            .get<any>(`${this.prod_url}/Filter_Sort`, { params })
+            .pipe(map(res => res.data));   // keep - because res.data = PagedResult
     }
+
 
     getProducts(): Observable<Product[]> {
         return this.http.get<Product[]>(this.prod_url);
@@ -116,7 +123,7 @@ export class ProductService {
 
     deleteProduct(id: number): Observable<any> {
         return this.http.delete(
-            `${this.prod_url}/Admin/Delete/${id}`,
+            `${this.prod_url}/Admin/Delete${id}`,
             { withCredentials: true }
         );
     }

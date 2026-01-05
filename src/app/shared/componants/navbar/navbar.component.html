@@ -36,12 +36,12 @@
   <div class="hidden md:flex xl:flex items-center gap-6">
 
     <!-- Language Switch -->
-    <div class="flex border rounded-full overflow-hidden text-sm font-medium ml-2">
+    <!-- <div class="flex border rounded-full overflow-hidden text-sm font-medium ml-2">
       <button class="px-3 py-1 bg-black text-white">En</button>
       <button class="px-3 py-1 text-gray-700 hover:bg-gray-100">Es</button>
-    </div>
+    </div> -->
     <div class="flex justify-items-center items-center gap-2">
-      <div class="pl-3 group cursor-pointer hidden lg:flex md:flex relative" routerLink="/app-cart">
+      <div    *ngIf="!isAdmin" class="pl-3 group cursor-pointer hidden lg:flex md:flex relative" routerLink="/app-cart">
         <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
         class="w-8 h-8 text-white rounded-full ring-2 ring-white p-1 relative transition-all duration-300 group-hover:ring-yellow-500 group-hover:stroke-yellow-500">
         <path stroke-linecap="round" stroke-linejoin="round"
@@ -54,7 +54,7 @@
           {{ cartItemCount }}
         </span>
       </div>
-      <div class="pl-3 group cursor-pointer hidden lg:flex md:flex relative" routerLink="/app-wishlist">
+      <div *ngIf="!isAdmin" class="pl-3 group cursor-pointer hidden lg:flex md:flex relative" routerLink="/app-wishlist">
 
         <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
         class="w-8 h-8 text-white rounded-full ring-2 ring-white p-1 relative transition-all duration-300 group-hover:ring-yellow-500 group-hover:stroke-yellow-500">

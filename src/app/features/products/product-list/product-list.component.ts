@@ -12,6 +12,7 @@ import { WishlistService } from 'src/app/core/services/wishlist.service';
 import { WishlistBadgeService } from 'src/app/core/services/wishlistBadge.service';
 import { Category } from 'src/app/core/models/base-models/Category.model';
 import { CategoriesService } from 'src/app/core/services/base_services/categories.service';
+import { CartBadgeService } from 'src/app/core/services/cartBadge.service';
 
 @Component({
     selector: 'app-product-list',
@@ -29,6 +30,7 @@ export class ProductListComponent implements OnInit {
     private cartService = inject(CartService);
     private wishlistService = inject(WishlistService);
     private wishlistBadge = inject(WishlistBadgeService);
+    private cartBadge = inject(CartBadgeService);
 
 
     products: Product[] = [];
@@ -37,6 +39,8 @@ export class ProductListComponent implements OnInit {
     isLoading = true;
     isColorsExpanded: boolean = false;
 
+    totalPages = 1;
+    totalCount = 0;
 
     //Filter From backend
     searchTerm: string = '';
@@ -70,6 +74,8 @@ export class ProductListComponent implements OnInit {
     cartQuantities = new Map<number, number>();
 
     ngOnInit() {
+        this.isLoading = true;
+
         this.loadProducts();
         this.loadCategories();
         this.loadColors();
@@ -82,13 +88,10 @@ export class ProductListComponent implements OnInit {
         });
     }
 
-    ngOnDestroy() {
-        if (this.searchSubscription) {
-            this.searchSubscription.unsubscribe();
-        }
-    }
+
 
     loadProducts() {
+        this.isLoading = true;
         this.productService.getAllProducts().subscribe({
             next: (products) => {
                 console.log("🔵 RAW PRODUCTS FROM API:", products);
@@ -99,12 +102,14 @@ export class ProductListComponent implements OnInit {
                 //           p.availableColors
                 //         );
                 //       });
-                this.products = products;
-                this.filteredProducts = products;
+                const activeProducts = products.filter(p => p.isActive === true);
+
+                this.products = activeProducts;
+                this.filteredProducts = activeProducts;
 
                 // Price
-                this.minPrice = Math.min(...products.map(p => p.price));
-                this.maxPrice = Math.max(...products.map(p => p.price));
+                this.minPrice = Math.min(...activeProducts.map(p => p.price));
+                this.maxPrice = Math.max(...activeProducts.map(p => p.price));
                 this.priceRange = [this.minPrice, this.maxPrice];
 
                 // Colors (flatten + unique)
@@ -124,7 +129,11 @@ export class ProductListComponent implements OnInit {
         });
     }
 
-
+    ngOnDestroy() {
+        if (this.searchSubscription) {
+            this.searchSubscription.unsubscribe();
+        }
+    }
     loadCategories() {
         this.categorytService.getCategories().subscribe({
             next: (categories) => {
@@ -176,6 +185,8 @@ export class ProductListComponent implements OnInit {
         });
     }
     loadCartStatus() {
+        this.cartBadge.updateCartCount(this.cartQuantities.size);
+
         this.cartService.getMyCart().subscribe(res => {
             this.cartProductMap.clear();
             this.cartQuantities.clear();
@@ -186,6 +197,8 @@ export class ProductListComponent implements OnInit {
                     this.cartQuantities.set(i.productId, i.quantity);
                 });
             }
+            this.cartBadge.updateCartCount(this.cartQuantities.size);
+
         });
     }
 
@@ -216,11 +229,11 @@ export class ProductListComponent implements OnInit {
             return;
         }
 
-        // Not in cart -> add
         this.cartService.addToCart(product.id, 1).subscribe(() => {
             this.toast.success("Added to cart");
             this.loadCartStatus();
         });
+
     }
 
 
@@ -283,13 +296,17 @@ export class ProductListComponent implements OnInit {
         this.isLoading = true;
 
         this.productService.filterProducts(params).subscribe({
-            next: res => {
-                let result = res.items || res;
+            next: (res) => {
+
+                this.filteredProducts = res.items;
+                this.totalCount = res.totalCount;
+                this.currentPage = res.page;
+                this.itemsPerPage = res.pageSize;
+                this.totalPages = Math.ceil(res.totalCount / res.pageSize);
 
                 if (this.showOnlyPopular)
-                    result = result.filter((p: any) => p.topSelling === true);
+                    this.filteredProducts = this.filteredProducts.filter((p: any) => p.topSelling);
 
-                this.filteredProducts = result;
                 this.isLoading = false;
             },
             error: () => {
@@ -318,9 +335,9 @@ export class ProductListComponent implements OnInit {
     onPriceRangeChange() {
         this.applyFilters();
     }
-toggleColors() {
-  this.isColorsExpanded = !this.isColorsExpanded;
-}
+    toggleColors() {
+        this.isColorsExpanded = !this.isColorsExpanded;
+    }
     toggleColorFilter(colorId: string) {
         if (this.selectedColors.includes(colorId)) {
             this.selectedColors = this.selectedColors.filter(c => c !== colorId);
@@ -379,29 +396,24 @@ toggleColors() {
         if (this.showOnlyInStock) count++;
         return count;
     }
-    get paginatedProducts(): Product[] {
-        const start = (this.currentPage - 1) * this.itemsPerPage;
-        const end = start + this.itemsPerPage;
-        return this.filteredProducts.slice(start, end);
-    }
 
-    get totalPages(): number {
-        return Math.ceil(this.filteredProducts.length / this.itemsPerPage);
-    }
-
-    // Navigate pages
-    goToPage(page: number) {
-        if (page >= 1 && page <= this.totalPages) {
-            this.currentPage = page;
+    nextPage() {
+        if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+            this.applyFilters();
         }
     }
 
-    nextPage() {
-        if (this.currentPage < this.totalPages) this.currentPage++;
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.applyFilters();
+        }
     }
 
-    prevPage() {
-        if (this.currentPage > 1) this.currentPage--;
+    goToPage(page: number) {
+        this.currentPage = page;
+        this.applyFilters();
     }
 
 
@@ -418,36 +430,12 @@ toggleColors() {
 
 
 
-    viewProduct(product: Product) {
-        // const user = JSON.parse(localStorage.getItem("currentUser") || '{}');
-        // this.userId = user?.id || null;
-
-        if (product.currentStock <= 0) {
-            this.toast.info("⚠️ Out of currentStock");
-            return;
-        }
-
-        if (!this.userId) {
-            this.toast.error("User not logged in");
-            return;
-        }
-
-        this.http.get<any>(`${this.usersUrl}/${this.userId}`).subscribe({
-            next: (userData) => {
-                if (userData.isBlocked) {
-                    this.toast.error("User is blocked. Please contact administrator");
-                } else {
-                    this.router.navigate(['/products/product-buy'], {
-                        state: { product: [product] }
-                    });
-                }
-            },
-            error: (err) => {
-                console.error("Error fetching user data:", err);
-                this.toast.error("Failed to verify user status");
-            }
-        });
+    BuyProduct(product: Product) {
+        this.router.navigate(
+            ['/products/product-buy', product.id]
+        );
     }
+
 
 
     viewProductDetail(product: Product) {

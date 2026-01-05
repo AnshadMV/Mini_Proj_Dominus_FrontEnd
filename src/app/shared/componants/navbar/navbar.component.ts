@@ -65,12 +65,16 @@ export class NavbarComponent implements OnInit {
     this.cartBadgeService.cartItemCount$.subscribe(count => {
       this.cartItemCount = count;  // Remove loadCartCount() here!
     });
+
     this.WishlistBadgeService.WishlistItemCount$.subscribe(count => {
       this.wishListItemCount = count;  // Remove loadwishlistCount()!
     });
     this.searchService.searchTerm$.subscribe(term => {
       this.searchTerm = term;
     });
+  }
+  get isAdmin(): boolean {
+    return this.userProfile?.role?.toLowerCase() === 'admin';
   }
 
   navigation() {

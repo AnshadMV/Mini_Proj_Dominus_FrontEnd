@@ -1,48 +1,50 @@
-// import { Injectable } from '@angular/core';
-// import { CanActivate, Router, UrlTree } from '@angular/router';
-// import { Observable, of } from 'rxjs';
-// import { filter, map, switchMap, take, catchError } from 'rxjs/operators';
-// import { AuthService } from '../services/auth.service';
+import { Injectable } from '@angular/core';
+import { CanActivate, Router } from '@angular/router';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { AuthService } from '../services/auth.service';
+import { ToastService } from '../services/toast.service';
 
-// @Injectable({
-//   providedIn: 'root'
-// })
-// export class UserGuard implements CanActivate {
+@Injectable({ providedIn: 'root' })
+export class UserGuard implements CanActivate {
 
-//   constructor(
-//     private auth: AuthService,
-//     private router: Router
-//   ) { }
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private toast: ToastService
+  ) {}
 
-//   canActivate(): Observable<boolean | UrlTree> {
-//     return this.auth.isAuthenticated$.pipe(
-//       filter(isAuth => isAuth !== null),
-//       take(1),
-//       switchMap(isAuth => {
-//         if (!isAuth) {
-//           return of(this.router.createUrlTree(['/app-login']));
-//         }
+  canActivate(): Observable<boolean> {
+    return this.auth.getMyProfile().pipe(
+      map(res => {
+        const user = res?.data;
 
-//         return this.auth.getMyProfile().pipe(
-//           map(response => {
-//             if (response.statusCode === 200 && response.data) {
-//               const userRole = response.data.role?.toLowerCase();
-              
-//               if (userRole === 'user' || userRole === 'admin') {
-//                 return true;
-//               } else {
-//                 return this.router.createUrlTree(['/app-home']);
-//               }
-//             } else {
-//               return this.router.createUrlTree(['/app-login']);
-//             }
-//           }),
-//           catchError(err => {
-//             console.error('UserGuard - Error:', err);
-//             return of(this.router.createUrlTree(['/app-login']));
-//           })
-//         );
-//       })
-//     );
-//   }
-// }
+        // Not logged in
+        if (!user) {
+          this.router.navigate(['/app-login']);
+          return false;
+        }
+
+        // Blocked user
+        if (user.isBlocked) {
+          this.router.navigate(['/app-login']);
+          return false;
+        }
+
+        // Check USER role
+        if (user.role?.toLowerCase() === 'user') {
+          return true;
+        }
+
+        // NOT USER
+        this.toast.error("You don't have permission to access this page");
+        this.router.navigate(['/app-home']);
+        return false;
+      }),
+      catchError(() => {
+        this.router.navigate(['/app-login']);
+        return of(false);
+      })
+    );
+  }
+}

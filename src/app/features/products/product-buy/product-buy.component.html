@@ -31,11 +31,11 @@
                         </button>
 
                         <!-- Filters -->
-                        <button
+                        <!-- <button
                             class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
                             <i class="fa-solid fa-filter fa-bounce text-purple-400"></i>
                             <span>Related Pd</span>
-                        </button>
+                        </button> -->
                     </div>
                 </div>
 
@@ -71,7 +71,7 @@
                             <!-- Product Image -->
                             <div
                                 class="w-full aspect-square flex items-center justify-center bg-white rounded-lg overflow-hidden mb-3">
-                                <img [src]="p.images" class="object-contain w-full h-full" />
+                                <img [src]="p.images[0]" class="object-contain w-full h-full" />
                             </div>
 
                             <!-- Info -->
@@ -83,9 +83,19 @@
                                 <p class="text-gray-500 text-xs capitalize">
                                     Category: {{ p.category }}
                                 </p>
-                                <p class="text-gray-500 text-xs capitalize break-words whitespace-normal">
-                                    Color: {{ p.colors }}
-                                </p>
+                                <div class="mt-2">
+                                    <label class="text-xs text-gray-600">Select Color</label>
+                                    <select [(ngModel)]="p.selectedColorId"
+                                        class="w-full border rounded px-2 py-1 text-sm text-black">
+
+                                        <option *ngFor="let c of p.availableColors" [value]="c.colorId">
+                                            {{ c.colorName }}
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
 
                                 <!-- Display Quantity instead of Stock -->
                                 <p class="text-gray-500 text-xs">
@@ -115,7 +125,6 @@
                         </button>
                     </div>
                 </div>
-
                 <!-- No Items Template -->
                 <ng-template #noItems>
                     <div class="text-center py-12">
