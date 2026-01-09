@@ -28,7 +28,7 @@ export class ResetPasswordComponent {
 
     this.loading = true;
 
-    this.auth.resetPasswordforNotloggined(this.email, this.otp, this.newPassword)
+    this.auth.resetPassword(this.email, this.otp, this.newPassword)
       .subscribe({
         next: res => {
           this.loading = false;

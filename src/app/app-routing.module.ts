@@ -13,7 +13,6 @@ import { ContactUsComponent } from './features/contact-us/contact-us.component';
 import { PublicGuard } from './core/guards/public.guard';
 import { AuthGuard } from './core/guards/auth.guard';
 import { AdminGuard } from './core/guards/admin.guard';
-import { PaymentComponent } from './features/payment/payment.component';
 import { UserGuard } from './core/guards/user.guard';
 import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
@@ -51,12 +50,7 @@ const routes: Routes = [
     component: OrdersComponent,
     canActivate: [AuthGuard, UserGuard]
   },
-  {
-    path: 'app-payment/:orderId',
-    component: PaymentComponent,
-    canActivate: [AuthGuard, UserGuard]
-
-  }, { path: 'forgot-password', component: ForgotPasswordComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: 'reset-password', component: ResetPasswordComponent },
 
 

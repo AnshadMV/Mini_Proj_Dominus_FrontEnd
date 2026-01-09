@@ -19,21 +19,21 @@
                         <!-- Cart -->
                         <button routerLink="/app-cart"
                             class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-cart-shopping fa-bounce text-blue-400"></i>
+                            <i class="fa-solid fa-cart-shopping   text-blue-400"></i>
                             <span>Cart</span>
                         </button>
 
                         <!-- Orders -->
                         <button routerLink="/app-orders"
                             class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-box fa-bounce text-green-400"></i>
+                            <i class="fa-solid fa-box   text-green-400"></i>
                             <span>Orders</span>
                         </button>
 
                         <!-- Filters -->
                         <button routerLink="/app-about"
                             class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-phone fa-shake" style="color: #B197FC;"></i> <span>About Us</span>
+                            <i class="fa-solid fa-phone " style="color: #B197FC;"></i> <span>About Us</span>
                         </button>
                     </div>
                 </div>
@@ -173,10 +173,12 @@
 
 
 
-<app-password-edit class="text-black"
+<app-password-edit
   [visible]="showPasswordModal"
+  [email]="userEmail"
   (closePasswordModal)="closePasswordModal()">
 </app-password-edit>
+
 
     <app-shipping-address-modal
   *ngIf="showShippingModal"

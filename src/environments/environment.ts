@@ -1,18 +1,17 @@
 export const environment = {
   production: false,
   API: {
-    BASE_URL: 'https://localhost:7121/api',
-    PRODUCTURL: 'https://localhost:7121/api/Products',
-    CATEGORYURL: 'https://localhost:7121/api/Categories',
-    CARTURL: 'https://localhost:7121/api/Cart',
-    WISH_URL: 'https://localhost:7121/api/Wishlist',
-    USERURL: 'https://localhost:7121/api/Users/Admin/GetAll',
-    AUTH: 'https://localhost:7121/api/Auth',
-    USERS: 'https://localhost:7121/api/Users/Admin',
-    REG_URL: 'https://localhost:7121/api/Auth/register',
-    LOG_URL: 'https://localhost:7121/api/Auth/login',
-    SHIPPING_ADDRESS: 'https://localhost:7121/api/shipping-address',
-
+    BASE_URL: 'http://dominus.runasp.net/api',
+    PRODUCTURL: 'http://dominus.runasp.net/api/Products',
+    CATEGORYURL: 'http://dominus.runasp.net/api/Categories',
+    CARTURL: 'http://dominus.runasp.net/api/Cart',
+    WISH_URL: 'http://dominus.runasp.net/api/Wishlist',
+    USERURL: 'http://dominus.runasp.net/api/Users/Admin/GetAll',
+    AUTH: 'http://dominus.runasp.net/api/Auth',
+    USERS: 'http://dominus.runasp.net/api/Users/Admin',
+    REG_URL: 'http://dominus.runasp.net/api/Auth/register',
+    LOG_URL: 'http://dominus.runasp.net/api/Auth/login',
+    SHIPPING_ADDRESS: 'http://dominus.runasp.net/api/shipping-address',
   }
 };
 

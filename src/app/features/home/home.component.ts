@@ -63,18 +63,11 @@ export class HomeComponent implements OnInit {
   //   container.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
   // }
   loadVideoServices() {
-    this.HomeVideoService.getFeaturedVideoServices(4).subscribe({
-      next: (VideoServices) => {
-        console.log('Services loaded:', VideoServices);
-
-        this.services = VideoServices;
-        setTimeout(() => this.animateServiceCards(), 300);
-
-      },
-      error: (error) => {
-        console.error('Error loading services:', error);
-      }
-    });
+    this.HomeVideoService.getFeaturedVideoServices(5)
+      .subscribe({
+        next: data => this.services = data,
+        error: () => console.error('Failed to load video services')
+      });
   }
 
 

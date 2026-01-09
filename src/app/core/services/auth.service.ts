@@ -145,26 +145,26 @@ export class AuthService {
     /* =======================
 FORGOT PASSWORD
 ======================= */
-    forgotPassword(email: string = '') {
-        return this.http.post<AuthResponse<string>>(
-            `${this.apiUrl}/ForgotPassword`,
-            { email },
-            { withCredentials: true }
-        );
-    }
+    // forgotPassword(email: string = '') {
+    //     return this.http.post<AuthResponse<string>>(
+    //         `${this.apiUrl}/ForgotPassword`,
+    //         { email },
+    //         { withCredentials: true }
+    //     );
+    // }
 
 
 
 
-    /* =======================
-    RESET PASSWORD
-    ======================= */
-    resetPassword(token: string, newPassword: string) {
-        return this.http.post<AuthResponse>(
-            `${this.apiUrl}/ResetPassword`,
-            { token, newPassword }
-        );
-    }
+    // /* =======================
+    // RESET PASSWORD
+    // ======================= */
+    // resetPassword(token: string, newPassword: string) {
+    //     return this.http.post<AuthResponse>(
+    //         `${this.apiUrl}/ResetPassword`,
+    //         { token, newPassword }
+    //     );
+    // }
 
 
 
@@ -175,12 +175,11 @@ FORGOT PASSWORD
         );
     }
 
-    resetPasswordforNotloggined(email: string, otp: string, newPassword: string) {
+    resetPassword(email: string, otp: string, newPassword: string) {
         return this.http.post<ApiResponse<string>>(
             `${this.apiUrl}/reset-password`,
             { email, otp, newPassword }
         );
     }
-
 
 }

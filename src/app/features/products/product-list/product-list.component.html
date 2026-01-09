@@ -19,21 +19,22 @@
                         <!-- Cart -->
                         <button routerLink="/app-cart"
                             class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-cart-shopping text-blue-400 fa-bounce"></i>
+                            <i class="fa-solid fa-cart-shopping text-blue-400  "></i>
                             <span>Cart</span>
                         </button>
-
+                        
                         <!-- Orders -->
                         <button routerLink="/app-orders"
                             class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-box fa-bounce text-green-400"></i>
+                            <i class="fa-solid fa-box   text-green-400"></i>
                             <span>Orders</span>
                         </button>
+
 
                         <!-- Filters -->
                         <button (click)="toggleFilters()"
                             class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-filter fa-bounce text-purple-400"></i>
+                            <i class="fa-solid fa-filter   text-purple-400"></i>
                             <span>Filters</span>
                         </button>
                     </div>
@@ -209,7 +210,6 @@
                     </div>
                 </div>
                 <!-- Products Grid -->
-                <!-- Product Grid Loader -->
                 <div *ngIf="isLoading" class="flex justify-center items-center min-h-[300px]">
                     <div class="flex flex-col items-center gap-3">
                         <div class="w-10 h-10 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
@@ -218,116 +218,165 @@
                 </div>
 
                 <!-- Products Grid -->
-                <div *ngIf="!isLoading && filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div *ngIf="!isLoading && filteredProducts.length > 0"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
 
                     <div *ngFor="let product of filteredProducts"
                         class="bg-white rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 group flex flex-col h-full">
-                        <!-- Product Image Section -->
-                        <div (click)="viewProductDetail(product)" class="cursor-pointer flex-grow">
-                            <div class="aspect-square bg-gray-50 relative overflow-hidden">
+                        <!-- Image Section -->
+                        <div (click)="viewProductDetail(product)"
+                            class="relative overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                            <div class="aspect-square relative">
+                                <!-- Product Image with enhanced hover effect -->
                                 <img [src]="product.images?.[0]" [alt]="product.name"
-                                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                    class="w-full h-full object-cover group-hover:scale-110 transition-all duration-700 ease-out" />
 
-                                <!-- Badges positioned over image -->
-                                <div class="absolute top-3 left-3 right-3 flex justify-between items-start">
-                                    <div
-                                        class="text-xs bg-blue-500 text-white px-3 py-1.5 rounded-full backdrop-blur-sm">
-                                        {{ product.categoryName | titlecase }}
-                                    </div>
-                                    
+                                <!-- Overlay gradient on hover -->
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
                                 </div>
 
-                                <!-- Stock status overlay -->
-                                <div class="absolute bottom-3 left-3">
-                                    <span class="text-xs font-medium px-2 py-1 rounded-full backdrop-blur-sm"
-                                        [class.bg-green-100]="product.currentStock > 0"
-                                        [class.bg-red-100]="product.currentStock === 0"
-                                        [class.text-green-800]="product.currentStock > 0"
-                                        [class.text-red-800]="product.currentStock === 0">
-                                        {{product.currentStock > 0 ? '✓ In Stock' : '✗ Out of Stock'}}
+                                <!-- Category Badge -->
+                                <!-- <div class="absolute top-4 left-4">
+                                    <span
+                                        class="text-xs font-semibold bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1.5 rounded-full shadow-sm">
+                                        {{ product.categoryName | titlecase }}
+                                    </span>
+                                </div> -->
+
+                                <!-- Stock Status Badge -->
+                                <div class="absolute top-4 left-4">
+                                    <span
+                                        class="text-xs font-medium px-3 py-1.5 rounded-full shadow-sm backdrop-blur-sm"
+                                        [class.bg-emerald-100]="product.currentStock > 0"
+                                        [class.bg-rose-100]="product.currentStock === 0"
+                                        [class.text-emerald-800]="product.currentStock > 0"
+                                        [class.text-rose-800]="product.currentStock === 0">
+                                        {{product.categoryName }}
+                                    </span>
+                                </div>
+
+                                <!-- Top Selling Badge -->
+                                <div *ngIf="product.topSelling"
+                                    class="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                                    <span
+                                        class="text-xs font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-1.5 rounded-full shadow-lg">
+                                        ⚡ Top Seller
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Product Info Section -->
-                        <div class="p-2 flex-grow-0">
+                        <div class="pl-2 pr-2 pb-0 pt-0 flex-grow-0">
                             <!-- Product Name & Price -->
-                            <div class="">
-                                <h3 class="text-lg font-bold text-gray-900 line-clamp-2 leading-tight">
-                                    {{ product.name }}
-                                </h3>
-                                <div class="flex items-center justify-between ">
-                                    <!-- <p
-                                        class="text-xl font-extrabold bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 bg-clip-text">
-                                        {{ product.price | currency:'INR' }}
-                                    </p> -->
-                                    <p
-                                        class="text-2xl font-bold text-transparent bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 mb-3 bg-clip-text">
-                                        {{ product.price | currency:'INR' }}
+
+
+                            <h3 class="text-base font-semibold text-gray-900 leading-snug line-clamp-2 mb-0">
+                                {{ product.name }}
+                            </h3>
+                            <div class="flex items-center justify-between">
+                                <p class="text-lg py-0 font-bold text-gray-900">
+
+                                    {{ product.price | currency:'INR' }}
+                                </p>
+
+                                <span *ngIf="product.topSelling" class="text-[10px] font-semibold px-2 py-0.5 rounded-full
+                   bg-amber-100 text-amber-700">
+                                    Trending
+                                </span>
+                            </div>
+
+
+
+                            <!-- Product Stats (Compact) -->
+                            <div class="flex items-center justify-around py-2 mb-3
+         bg-gradient-to-r from-gray-50 to-white
+         rounded-lg border border-gray-100">
+                                <div class="text-center px-1.5">
+                                    <p class="text-sm font-semibold text-gray-900">
+                                        {{ product.currentStock }}
                                     </p>
-                                    <span *ngIf="product.topSelling" class="text-sm text-amber-600 font-medium">
-                                         🔥 Hot
-                                    </span>
+                                    <p class="text-[10px] text-gray-600 font-medium">
+                                        In Stock
+                                    </p>
+                                </div>
+
+                                <div class="w-px h-6 bg-gradient-to-b from-transparent via-gray-300 to-transparent">
+                                </div>
+
+                                <div class="text-center px-1.5">
+                                    <p class="text-sm font-semibold text-gray-900">
+                                        {{ product.availableColors?.length || 1 }}
+                                    </p>
+                                    <p class="text-[10px] text-gray-600 font-medium">
+                                        Colors
+                                    </p>
                                 </div>
                             </div>
 
-                            <!-- Product Stats -->
-                            <div class="flex justify-between items-center py-2 border-y border-gray-100">
-                                <div class="text-center flex-1">
-                                    <p class="text-sm font-bold text-gray-900">{{product.currentStock}}</p>
-                                    <p class="text-xs text-gray-500">Available</p>
-                                </div>
-                                <div class="w-px h-6 bg-gray-200"></div>
-                                <div class="text-center flex-1">
-                                    <p class="text-sm font-bold text-gray-900">{{ product.availableColors.length || 1 }}
-                                        <!-- <p class="text-sm font-bold text-gray-900">{{ product.availableColors}} -->
-                                        <!--  <p class="text-sm font-bold text-gray-900 flex-1">{{ product.availableColors?.[0] }} -->
-                                        <!-- <p class="text-sm font-bold text-gray-900 flex-1">{{ product.availableColors? }} </p> -->
-                                    </p>
-                                    <p class="text-xs text-gray-500">Colors</p>
-                                </div>
-                                <div class="w-px h-6 bg-gray-200"></div>
-                                <!-- <div class="text-center flex-1">
-                                    <p class="text-sm font-bold" [class.text-green-600]="product.topSelling"
-                                        [class.text-gray-500]="!product.topSelling">
-                                        {{ product.topSelling ? 'Yes' : 'No' }}
-                                    </p>
-                                    <p class="text-xs text-gray-500">Trending</p>
-                                </div> -->
-                            </div>
                         </div>
 
                         <!-- Action Buttons -->
-                        <div class="p-2 pt-0">
+                        <div class="pl-2 pr-2 pb-2 pt-0">
                             <div class="flex gap-3 items-center">
-                                <button (click)="BuyProduct(product)"
-                                    class="flex-1 bg-black text-white px-2 py-2 rounded-xl text-xs font-semibold hover:bg-gray-800 active:scale-95 transition-all duration-200">
-                                    Buy Now
+                                <button (click)="BuyProduct(product)" [disabled]="product.currentStock === 0" class="w-full px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200
+         hover:-translate-y-0.5 active:translate-y-0" [ngClass]="{
+    'bg-gradient-to-r border border-grey from-yellow-200 to-yellow-100 text-red-400 cursor-not-allowed':
+      product.currentStock === 0,
+    'bg-gradient-to-r from-yellow-400 to-yellow-500 text-black hover:shadow-md
+     hover:from-yellow-500 hover:to-yellow-600 active:scale-[0.97]':
+      product.currentStock > 0
+  }">
+                                    <span class="flex items-center justify-center gap-1.5">
+                                        <svg *ngIf="product.currentStock > 0" class="w-3.5 h-3.5" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                        </svg>
+
+                                        {{ product.currentStock > 0 ? 'Buy Now' : 'Out of Stock' }}
+                                    </span>
                                 </button>
+
+
+
 
                                 <div class="flex gap-2">
                                     <button (click)="addTowishlist(product)" [ngClass]="wishlistProductIds.has(product.id) 
-      ? 'bg-red-50 border-red-300' 
-      : 'border-gray-300'" class="w-10 h-10 rounded-xl flex items-center justify-center hover:border-red-300 hover:bg-red-50 transition-colors">
+        ? 'bg-red-50 border-red-300' 
+        : 'border-gray-300'" class="w-8 h-8 rounded-lg flex items-center justify-center border hover:border-red-300 hover:bg-red-50 transition-all duration-200 active:scale-95">
 
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                            stroke="currentColor" class="w-5 h-5 transition-colors" [ngClass]="wishlistProductIds.has(product.id) 
-        ? 'text-red-500' 
-        : 'text-gray-600'">
+                                            stroke="currentColor" class="w-4 h-4 transition-colors duration-200"
+                                            [ngClass]="wishlistProductIds.has(product.id) 
+            ? 'text-red-500' 
+            : 'text-gray-500'">
 
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
                                         </svg>
 
                                     </button>
+
                                     <button (click)="addToCart(product)"
-                                        class="w-10 h-10 rounded-xl flex items-center justify-center active:scale-95 transition-all duration-200 shadow-sm border"
-                                        [ngClass]="{'bg-gray-300 border-gray-400 hover:bg-blue-500': product.currentStock === 0,'bg-yellow-400 border-yellow-500 hover:bg-yellow-500': product.currentStock > 0 && !isInCart(product.id),'bg-green-500 border-green-600 hover:bg-green-600': product.currentStock > 0 && isInCart(product.id)}">
-                                        <i class="fa-solid text-black text-xs"
-                                            [ngClass]="isInCart(product.id) ? 'fa-check' : 'fa-plus'">
-                                        </i>
+                                        class="flex-1 px-3 py-2 rounded-lg border transition-all duration-200 hover:shadow-sm active:scale-95 flex items-center justify-center gap-1.5 tracking-wide"
+                                        [ngClass]="{
+        'bg-gradient-to-r from-amber-50 to-yellow-50 border-amber-300 text-amber-700 hover:from-amber-100 hover:to-yellow-100': product.currentStock > 0 && !isInCart(product.id),
+        'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300 text-emerald-700 hover:from-emerald-100 hover:to-green-100': product.currentStock > 0 && isInCart(product.id),
+        'bg-gradient-to-r from-gray-100 to-gray-200 border-gray-400 text-gray-500 cursor-not-allowed': product.currentStock === 0
+    }">
+
+                                        <i class="fa-solid text-xs" [ngClass]="{
+            'fa-plus': !isInCart(product.id) && product.currentStock > 0,
+            'fa-check': isInCart(product.id),
+            'fa-ban': product.currentStock === 0
+        }"></i>
+
+                                        <!-- <div class="text-xs font-medium tracking-wide">
+                                        </div> -->
                                     </button>
+
 
                                 </div>
                             </div>

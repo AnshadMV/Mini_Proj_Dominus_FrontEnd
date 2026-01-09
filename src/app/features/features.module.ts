@@ -6,7 +6,6 @@ import { ProductModule } from './products/product.module';
 import { HomeComponent } from './home/home.component';
 import { CartComponent } from './cart/cart.component';
 import { WishlistComponent } from './wishlist/wishlist.component';
-import { PaymentComponent } from './payment/payment.component';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { AboutComponent } from './about/about.component';
 import { OrdersComponent } from './orders/orders.component';
@@ -20,31 +19,29 @@ import { AdminModule } from './admin/admin.module';
 
 @NgModule({
     declarations: [
-        
+
         HomeComponent,
         CartComponent,
         WishlistComponent,
-        PaymentComponent,
-        
-       
+
+
         NotFoundComponent,
         AboutComponent,
-      
+
         OrdersComponent,
         ContactUsComponent,
     ],
     imports: [
-    CommonModule,
-    RouterModule,
-    HttpClientModule,
-    FormsModule, ProductModule, NgxPaginationModule, AuthModule, 
-    SharedModule,ProfileModule,AdminModule
-],
-    exports: [ 
+        CommonModule,
+        RouterModule,
+        HttpClientModule,
+        FormsModule, ProductModule, NgxPaginationModule, AuthModule,
+        SharedModule, ProfileModule, AdminModule
+    ],
+    exports: [
         HomeComponent,
         CartComponent,
         WishlistComponent,
-        PaymentComponent,
         NotFoundComponent,
         AboutComponent,
         OrdersComponent,

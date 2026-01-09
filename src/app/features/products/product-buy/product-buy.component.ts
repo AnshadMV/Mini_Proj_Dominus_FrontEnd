@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, map, of, switchMap } from 'rxjs';
 import { ProductWithQuantity } from 'src/app/core/models/base-models/productwithquantity';
+import { OrderService } from 'src/app/core/services/order.service';
 import { ToastService } from 'src/app/core/services/toast.service';
 import { environment } from 'src/environments/environment';
 
@@ -26,7 +27,7 @@ export class ProductBuyComponent implements OnInit {
     private router: Router,
     private toast: ToastService,
     private http: HttpClient, private route: ActivatedRoute,
-
+    private order: OrderService
   ) {
 
   }
@@ -169,97 +170,131 @@ export class ProductBuyComponent implements OnInit {
 
 
   confirmPurchace() {
+
+    if (!this.products.length) {
+      this.toast.error("No products to purchase");
+      return;
+    }
+
     this.isProcessing = true;
 
-    const createOrderDto = {
+    const dto = {
       items: this.products.map(p => ({
         productId: p.id,
-        colorId: p.selectedColorId!,   // always exists now
-        quantity: p.quantity || 1
+        quantity: p.quantity || 1,
+        colorId: p.selectedColorId
       }))
     };
 
-    this.http.post<any>(`${this.usersUrl}/Order/Add`, createOrderDto, {
-      withCredentials: true
-    }).subscribe({
+    this.http.post<any>(
+      `${this.usersUrl}/Order/Add`,
+      dto,
+      { withCredentials: true }
+    ).subscribe({
       next: res => {
-        const orderId = res.data.orderId;
-        this.router.navigate(['/app-payment', orderId]);
-      },
-      error: err => {
-        this.toast.error(err.error?.message || "Order failed");
+        const order = res.data;
         this.isProcessing = false;
+
+        if (!order?.razorOrderId || !order?.razorKey) {
+          this.toast.error("Payment could not be initialized");
+          return;
+        }
+
+        this.openRazorpay(order);
+      },
+      error: () => {
+        this.isProcessing = false;
+        this.toast.error("Order creation failed");
+      } 
+    });
+  }
+
+  openRazorpay(order: any) {
+
+    const options: any = {
+      key: order.razorKey,
+      amount: order.totalAmount * 100,
+      currency: "INR",
+      name: "Dominus Store",
+      description: "Order Payment",
+      order_id: order.razorOrderId,
+
+      handler: (response: any) => {
+        this.verifyPayment(response, order.orderId);
+      },
+
+      modal: {
+        confirm_close: true,
+        ondismiss: () => {
+          console.log("ondismiss triggered");
+          this.cancelPendingOrder(order.orderId);
+        }
+      },
+
+      theme: { color: "#000000" }
+    };
+
+    const rzp = new (window as any).Razorpay(options);
+
+    // MUST BE BEFORE open()
+
+    // 🔥 Fires when user clicks "Yes, exit"
+    rzp.on("modal.closed", () => {
+      console.log("modal.closed triggered");
+      this.cancelPendingOrder(order.orderId);
+    });
+
+    // 🔥 Razorpay new UI throws failed event on exit
+    rzp.on("payment.failed", (resp: any) => {
+      console.log("payment.failed triggered", resp);
+
+      if (!resp?.error?.metadata?.payment_id) {
+        // no payment happened → user exited
+        this.cancelPendingOrder(order.orderId);
+      }
+    });
+
+    rzp.open();
+  }
+
+
+  verifyPayment(resp: any, orderId: number) {
+
+    const dto = {
+      orderId: orderId,
+      razorOrderId: resp.razorpay_order_id,
+      paymentId: resp.razorpay_payment_id,
+      signature: resp.razorpay_signature
+    };
+
+    this.http.post<any>(
+      `${this.usersUrl}/Order/VerifyPayment`,
+      dto,
+      { withCredentials: true }
+    ).subscribe({
+      next: () => {
+        this.toast.success("Payment Successful 🎉");
+        this.router.navigate(['/app-orders']);
+      },
+      error: () => {
+        this.toast.error("Payment Verification Failed ❌");
       }
     });
   }
-  startUroPayment(orderId: number) {
-    // OPEN A SAFE BLANK WINDOW FIRST (Browser won't block this)
-    const qrWindow = window.open('', '_blank');
 
-    this.http.post<any>(
-      `${this.usersUrl}/Order/CreatePayment/${orderId}`,
-      {},
-      { withCredentials: true }
-    )
-      .subscribe({
-        next: res => {
-          const data = res.data;
 
-          if (!data) {
-            this.toast.error("Payment session failed");
-            this.isProcessing = false;
-            qrWindow?.close();
-            return;
-          }
+  cancelPendingOrder(orderId: number) {
+    console.log("Canceling");
 
-          const upiLink = data.upiString;
-          const qr = data.qrCode;
-
-          const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-          if (isMobile && upiLink) {
-            window.location.href = upiLink;
-          }
-          else {
-            // Desktop → Show QR inside popup window
-            qrWindow!.document.write(`
-          <html>
-            <head>
-              <title>UPI Payment</title>
-            </head>
-            <body style="display:flex;justify-content:center;align-items:center;height:100vh;background:#111">
-              <img src="${qr}" style="width:350px;height:350px;border-radius:10px" />
-            </body>
-          </html>
-        `);
-
-            this.toast.info("Scan QR with any UPI app");
-          }
-        },
-
-        error: () => {
-          this.toast.error("Payment failed to start");
-          this.isProcessing = false;
-          qrWindow?.close();
-        }
-      });
+    this.order.cancelMyOrder(orderId).subscribe(() => {
+      this.toast.info("Payment cancelled. Order reverted.");
+    });
   }
 
 
 
 
 
-  createOrder() {
-
-  }
-
-  calculateEstimatedDelivery() {
-
-  }
-
-  clearCartItems(): void {
-
-  }
 
   goBack() {
     this.router.navigate(['/products']);

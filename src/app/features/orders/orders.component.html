@@ -19,21 +19,25 @@
             <!-- Cart -->
             <button routerLink="/app-cart"
               class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-              <i class="fa-solid fa-cart-shopping fa-bounce text-blue-400"></i>
+              <i class="fa-solid fa-cart-shopping   text-blue-400"></i>
               <span>Cart</span>
             </button>
-
-            <!-- Orders -->
-            <button routerLink="/app-orders"
+            <button routerLink="/app-wishlist"
               class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-              <i class="fa-solid fa-box fa-bounce text-green-400"></i>
-              <span>Orders</span>
+              <i class="fa-solid fa-heart" style="color: #ed1d1d;"></i>
+              <span>Wishlist</span>
+            </button>
+            <!-- Orders -->
+            <button routerLink="/app-about"
+              class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
+              <i class="fa-phone fa-box text-green-400"></i>
+              <span>Contact</span>
             </button>
 
             <!-- Filters -->
             <!-- <button
               class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-              <i class="fa-solid fa-filter fa-bounce text-purple-400"></i>
+              <i class="fa-solid fa-filter   text-purple-400"></i>
               <span>Related Pd</span>
             </button> -->
           </div>
@@ -327,8 +331,7 @@
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex gap-3 pt-4"
-                *ngIf="selectedOrder.status === 'PendingPayment'">
+              <div class="flex gap-3 pt-4" *ngIf="selectedOrder.status === 'PendingPayment'">
                 <button (click)="cancelOrder(selectedOrder)"
                   class="flex-1 bg-red-600 text-white px-6 py-3 rounded-full font-medium hover:bg-red-700 transition-colors">
                   Cancel Order
