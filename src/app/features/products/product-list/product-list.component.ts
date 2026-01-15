@@ -77,10 +77,7 @@ export class ProductListComponent implements OnInit {
         this.isLoading = true;
 
         this.loadProducts();
-        this.loadCategories();
-        this.loadColors();
-        this.loadCartStatus();
-        this.loadWishlist();
+       
 
         this.searchSubscription = this.searchService.searchTerm$.subscribe(term => {
             this.searchTerm = term;
@@ -105,7 +102,7 @@ export class ProductListComponent implements OnInit {
                 const activeProducts = products.filter(p => p.isActive === true);
 
                 this.products = activeProducts;
-                this.filteredProducts = activeProducts;
+                // this.filteredProducts = activeProducts;
 
                 // Price
                 this.minPrice = Math.min(...activeProducts.map(p => p.price));
@@ -122,11 +119,16 @@ export class ProductListComponent implements OnInit {
                 // // });
 
                 // this.availableColors = Array.from(colorSet);
+            this.applyFilters();
 
                 this.isLoading = false;
             },
             error: () => this.isLoading = false
         });
+         this.loadCategories();
+        this.loadColors();
+        this.loadCartStatus();
+        this.loadWishlist();
     }
 
     ngOnDestroy() {
@@ -273,6 +275,8 @@ export class ProductListComponent implements OnInit {
     }
 
     applyFilters() {
+            if (!this.products.length) return; // 🛑 prevent early empty state
+
         const params: any = {
             page: this.currentPage,
             pageSize: this.itemsPerPage,
