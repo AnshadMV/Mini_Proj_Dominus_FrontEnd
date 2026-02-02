@@ -1,19 +1,40 @@
-<div *ngIf="toasts.length > 0" class="fixed right-3 top-10 flex flex-col gap-2 p-4">
-  <div *ngFor="let toast of toasts" class="toast-card animate-slideIn" [ngClass]="toast.type">
-
-    <div class="flex items-start gap-3">
-      <div class="icon-circle">
-        <span *ngIf="toast.type === 'success'">✔️</span>
-
+<div *ngIf="toasts.length > 0" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 w-72">
+  <div *ngFor="let toast of toasts" 
+       class="group relative flex flex-col overflow-hidden rounded-xl bg-white p-3
+              shadow-[0_8px_20px_rgba(0,0,0,0.12)] border border-gray-100 animate-slideIn">
+    
+    <div class="flex items-center gap-3">
+      <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm"
+           [ngClass]="{
+             'bg-emerald-500 text-white shadow-emerald-200': toast.type === 'success',
+             'bg-rose-500 text-white shadow-rose-200': toast.type === 'error',
+             'bg-blue-500 text-white shadow-blue-200': toast.type === 'info'
+           }">
+        <span class="text-xs font-bold" *ngIf="toast.type === 'success'">✓</span>
+        <span class="text-xs font-bold" *ngIf="toast.type === 'error'">✕</span>
       </div>
-      <div class="ml-3 text-message font-bold">
-        {{ toast.message }}
+
+      <div class="flex-1 min-w-0">
+        <p class="truncate text-xs font-bold text-gray-800 tracking-tight">
+          {{ toast.message }}
+        </p>
       </div>
-      <button (click)="remove(toast.id)" class="ml-auto text-red-600 hover:text-gray-800 ">✖</button>
-    </div>
-    <div class="progress-bar-background">
-      <div class="progress-bar" [style.width.%]="toast.progress"></div>
+
+      <button (click)="remove(toast.id)" 
+              class="h-5 w-5 rounded-md hover:bg-gray-100 text-gray-400 flex items-center justify-center transition-colors">
+        <span class="text-sm">×</span>
+      </button>
     </div>
 
+    <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-gray-100 shadow-inner">
+      <div class="h-full transition-all duration-100"
+           [style.width.%]="toast.progress"
+           [ngClass]="{
+             'bg-emerald-500': toast.type === 'success',
+             'bg-rose-500': toast.type === 'error',
+             'bg-blue-500': toast.type === 'info'
+           }">
+      </div>
+    </div>
   </div>
 </div>

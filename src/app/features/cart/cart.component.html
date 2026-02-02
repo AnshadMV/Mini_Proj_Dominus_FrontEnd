@@ -17,11 +17,7 @@
           <!-- Button Group -->
           <div class="flex flex-wrap justify-center sm:justify-start gap-2">
             <!-- Cart -->
-            <button routerLink="/app-cart"
-              class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-              <i class="fa-solid fa-cart-shopping   text-blue-400"></i>
-              <span>Cart</span>
-            </button>
+
             <button routerLink="/app-wishlist"
               class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
               <i class="fa-solid fa-heart" style="color: #ed1d1d;"></i>
@@ -33,7 +29,11 @@
               <i class="fa-solid fa-box   text-green-400"></i>
               <span>Orders</span>
             </button>
-
+            <button routerLink="/app-about"
+              class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
+              <i class="fa-phone fa-box text-green-400"></i>
+              <span>Contact</span>
+            </button>
             <!-- Filters -->
             <!-- <button
               class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
@@ -62,13 +62,24 @@
           <p class="mt-4 text-gray-600">Loading your cart...</p>
         </div>
 
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex items-center gap-2 text-sm text-gray-500 animate-fadeIn">
+          <button (click)="goBack()"
+            class="group flex items-center gap-2 hover:text-black transition-all duration-300 bg-white/50 hover:bg-white px-3 py-1.5 rounded-full border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md">
+            <i class="fa-solid fa-tags text-xs group-hover:-translate-x-0.5 transition-transform"></i>
+            <span>Products</span>
+          </button>
+          <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
 
-        <div class="flex justify-between pb-2">
-          <button (click)="goBack()" class="flex items-center gap-2 text-gray-600 hover:text-black transition-colors">
+          <span class="font-medium text-gray-900">Carting...</span>
+
+        </nav>
+        <!-- <div class="flex justify-between pb-2">
+          <button  class="flex items-center gap-2 text-gray-600 hover:text-black transition-colors">
             <i class="fa-solid fa-arrow-left"></i>
             <span class=" text-sm font-medium">Back to Products</span>
           </button>
-        </div>
+        </div> -->
         <!-- Compact Cart Items -->
         <div *ngIf="!loading && cartItems.length > 0" class="container mx-auto px-4 py-8">
           <!-- Cart Grid -->

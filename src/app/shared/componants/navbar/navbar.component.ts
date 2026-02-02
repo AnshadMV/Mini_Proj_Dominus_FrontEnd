@@ -141,6 +141,8 @@ export class NavbarComponent implements OnInit {
   }
   profileClicked() {
     this.router.navigate(['/app-profile']);
+        this.showProfileDropdown = false;
+
   }
   naviagteToOrder() {
     this.router.navigate(['/app-orders']);

@@ -48,120 +48,274 @@
             </div>
 
             <!-- Right Content: Products Grid (9/12) -->
-            <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
+            <!-- Right Content: White Minimalist Design (9/12) -->
+            <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 custom-scrollbar bg-white">
 
+                <!-- Breadcrumb Navigation -->
+                        <nav class="flex items-center gap-2 text-sm text-gray-500 animate-fadeIn">
+                            <button routerLink="/app-home"
+                                class="group flex items-center gap-2 hover:text-black transition-all duration-300 bg-white/50 hover:bg-white px-3 py-1.5 rounded-full border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md">
+                                <i
+                                    class="fa-solid fa-house text-xs group-hover:-translate-x-0.5 transition-transform"></i>
+                                <span>Home</span>
+                            </button>
+                            <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+                            <span class="font-medium text-gray-900">Profiling</span>
+                        </nav>
 
+                <!-- Main Content Container -->
+                <div class="max-w-5xl mx-auto space-y-6 px-4 py-8">
 
-                <div class="flex justify-between pb-2">
-                    <button routerLink="/app-home"
-                        class="flex items-center gap-2 text-gray-600 hover:text-black transition-colors">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span class=" text-sm font-medium">Back to Home</span>
-                    </button>
-                </div>
+                    <!-- Profile Header Card -->
+                    <div class="bg-white rounded-3xl border border-gray-100 p-8 md:p-10">
+                        <div class="flex flex-col md:flex-row gap-8 items-start">
 
-
-                <section class="bg-white py-10">
-                    <div class="container mx-auto px-4">
-                        <div
-                            class="max-w-5xl mx-auto border border-gray-200 rounded-2xl shadow-sm p-8 bg-white animate-fadeInUp">
-
-                            <!-- Profile Header -->
-                            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-8 mb-10">
-                                <!-- Profile Image -->
-                                <div class="relative w-32 h-32">
-                                    <div
-                                        class="rounded-full w-full h-full border-4 border-yellow-400 bg-gray-100 overflow-hidden flex items-center justify-center">
-                                        <img src="https://plus.unsplash.com/premium_vector-1720740375507-2c946054580f?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=880"
-                                            alt="Profile Image" class="object-cover w-full h-full" />
-                                    </div>
+                            <!-- Avatar Section -->
+                            <div class="relative group mx-auto md:mx-0">
+                                <div
+                                    class="w-28 h-28 rounded-full bg-gray-50 border-2 border-gray-100 overflow-hidden flex items-center justify-center group-hover:border-gray-200 transition-colors">
+                                    <img src="https://plus.unsplash.com/premium_vector-1720740375507-2c946054580f?ixlib=rb-1.1.0&auto=format&fit=crop&q=80&w=880"
+                                        alt="Profile"
+                                        class="object-cover w-full h-full opacity-90 group-hover:opacity-100 transition-opacity" />
                                 </div>
+                                <button (click)="openModal()"
+                                    class="absolute bottom-0 right-0 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-sm flex items-center justify-center text-gray-600 hover:text-black hover:border-gray-300 transition-all">
+                                    <i class="fa-solid fa-camera text-xs"></i>
+                                </button>
+                            </div>
 
-                                <!-- Profile Info -->
-                                <div class="flex-1 sm:text-left">
-                                    <h2 class="text-3xl font-bold text-gray-900 mb-1">{{userName}}</h2>
-                                    <p class="text-gray-500 text-sm mb-4">Your Id : <span
-                                            class="text-blue-400">{{userId}}</span></p>
+                            <!-- Info Section -->
+                            <div class="flex-1 w-full text-center md:text-left">
+                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                                    <div>
+                                        <h1 class="text-3xl font-semibold text-gray-900 tracking-tight mb-1">
+                                            {{userName}}</h1>
+                                        <div
+                                            class="flex items-center justify-center md:justify-start gap-3 text-sm text-gray-500">
+                                            <span
+                                                class="font-mono text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">{{userId}}</span>
+                                            <span class="w-1 h-1 rounded-full bg-gray-300"></span>
+                                            <span>{{userRole}}</span>
+                                        </div>
+                                    </div>
 
-                                    <!-- Action Buttons -->
-                                    <div class="flex flex-wrap justify-center sm:justify-start gap-4">
+                                    <div class="flex items-center gap-3 justify-center md:justify-end">
                                         <button (click)="openModal()"
-                                            class="px-6 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition">
+                                            class="px-6 py-2.5 bg-white border border-gray-200 text-gray-900 rounded-full text-sm font-medium hover:border-gray-400 hover:bg-gray-50 transition-all">
                                             Edit Profile
                                         </button>
-
-
-
-                                        <button (click)="openPasswordModal()"
-                                            class="px-6 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition">
-                                            Change Password
-                                        </button>
-
-                                        <button (click)="openShippingModal()"
-                                            class="px-6 py-2 bg-gray-100 text-gray-800 rounded-full hover:bg-gray-200 transition">
-                                            Shipping Address
-                                        </button>
-
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Divider -->
-                            <div class="border-t border-gray-200 my-8"></div>
-
-                            <!-- User Details Grid -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <!-- Quick Info Row -->
                                 <div
-                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105">
-                                    <h4 class="text-gray-600 font-semibold mb-1">E-Mail</h4>
-                                    <p class="text-gray-800 break-all">{{userEmail}}</p>
-                                </div>
-
-                                <div
-                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105 delay-75">
-                                    <h4 class="text-gray-600 font-semibold mb-1">Name</h4>
-                                    <p class="text-gray-800">{{userName}}</p>
-                                </div>
-
-                                <div
-                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105 delay-100">
-                                    <h4 class="text-gray-600 font-semibold mb-1">Last Signed In</h4>
-                                    <p class="text-gray-800">{{userSignedTime}}</p>
-                                </div>
-
-                                <div
-                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105 delay-150">
-                                    <h4 class="text-gray-600 font-semibold mb-1">Role</h4>
-                                    <p class="text-gray-800">{{userRole}}</p>
-                                </div>
-                            </div>
-                            <!-- Shipping Address Section -->
-                            <div class="border-t border-gray-200 my-8"></div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div
-                                    class="border border-gray-200 p-6 rounded-2xl hover:shadow-md transition-transform hover:scale-105">
-                                    <h4 class="text-gray-600 font-semibold mb-1">Shipping Address</h4>
-                                    <p *ngIf="!activeShipping" class="text-gray-500">
-                                        No shipping address added yet.
-                                    </p>
-                                    <div *ngIf="activeShipping">
-                                        <p class="text-gray-800">
-                                            {{ activeShipping.addressLine }},
-                                            {{ activeShipping.city }},
-                                            {{ activeShipping.state }} - {{ activeShipping.pincode }}
-                                        </p>
-                                        <p class="text-gray-800">
-                                            Phone: {{ activeShipping.phone }}
-                                        </p>
-                                        <span class="text-xs text-green-600 font-semibold">Active</span>
+                                    class="flex flex-wrap justify-center md:justify-start gap-6 pt-6 border-t border-gray-100">
+                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                        <i class="fa-regular fa-envelope text-gray-400"></i>
+                                        <span>{{userEmail}}</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                                        <i class="fa-regular fa-clock text-gray-400"></i>
+                                        <span>Active {{userSignedTime}}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </section>
 
+                    <!-- Action Buttons Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button (click)="openPasswordModal()"
+                            class="group flex items-center gap-4 p-5 bg-white border border-gray-100 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all text-left">
+                            <div
+                                class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 group-hover:bg-gray-100 transition-colors">
+                                <i class="fa-solid fa-lock text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-900 text-sm">Password</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Change security settings</p>
+                            </div>
+                            <i
+                                class="fa-solid fa-chevron-right text-xs text-gray-300 ml-auto group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+
+                        <button (click)="openShippingModal()"
+                            class="group flex items-center gap-4 p-5 bg-white border border-gray-100 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all text-left">
+                            <div
+                                class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 group-hover:bg-gray-100 transition-colors">
+                                <i class="fa-solid fa-location-dot text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-900 text-sm">Shipping</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Manage addresses</p>
+                            </div>
+                            <i
+                                class="fa-solid fa-chevron-right text-xs text-gray-300 ml-auto group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+
+                        <button
+                            class="group flex items-center gap-4 p-5 bg-white border border-gray-100 rounded-2xl hover:border-gray-300 hover:shadow-sm transition-all text-left">
+                            <div
+                                class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-600 group-hover:bg-gray-100 transition-colors">
+                                <i class="fa-solid fa-bell text-sm"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-medium text-gray-900 text-sm">Notifications</h3>
+                                <p class="text-xs text-gray-500 mt-0.5">Email preferences</p>
+                            </div>
+                            <i
+                                class="fa-solid fa-chevron-right text-xs text-gray-300 ml-auto group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                        <!-- Personal Information -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <div class="bg-white border border-gray-100 rounded-3xl p-8">
+                                <div class="flex items-center justify-between mb-8">
+                                    <h2 class="text-lg font-semibold text-gray-900">Personal Information</h2>
+                                    <button (click)="openModal()"
+                                        class="text-sm text-gray-500 hover:text-gray-900 transition-colors">
+                                        Edit
+                                    </button>
+                                </div>
+
+                                <div class="space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div class="space-y-2">
+                                            <label
+                                                class="text-xs font-medium text-gray-400 uppercase tracking-wider">Full
+                                                Name</label>
+                                            <div
+                                                class="flex items-center gap-3 p-3 bg-gray-50/50 rounded-xl border border-gray-100">
+                                                <i class="fa-regular fa-user text-gray-400 text-sm"></i>
+                                                <span class="text-gray-900 font-medium">{{userName}}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <label
+                                                class="text-xs font-medium text-gray-400 uppercase tracking-wider">Email
+                                                Address</label>
+                                            <div
+                                                class="flex items-center gap-3 p-3 bg-gray-50/50 rounded-xl border border-gray-100">
+                                                <i class="fa-regular fa-envelope text-gray-400 text-sm"></i>
+                                                <span class="text-gray-900 text-sm">{{userEmail}}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <label
+                                                class="text-xs font-medium text-gray-400 uppercase tracking-wider">User
+                                                ID</label>
+                                            <div
+                                                class="flex items-center gap-3 p-3 bg-gray-50/50 rounded-xl border border-gray-100">
+                                                <i class="fa-solid fa-fingerprint text-gray-400 text-sm"></i>
+                                                <span class="text-gray-900 font-mono text-sm">{{userId}}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="space-y-2">
+                                            <label
+                                                class="text-xs font-medium text-gray-400 uppercase tracking-wider">Role</label>
+                                            <div
+                                                class="flex items-center gap-3 p-3 bg-gray-50/50 rounded-xl border border-gray-100">
+                                                <i class="fa-regular fa-id-badge text-gray-400 text-sm"></i>
+                                                <span class="text-gray-900 font-medium">{{userRole}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                         
+                        </div>
+
+                        <!-- Shipping Address Sidebar -->
+                        <div class="lg:col-span-1">
+                            <div class="bg-white border border-gray-100 rounded-3xl p-8 h-full">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h2 class="text-lg font-semibold text-gray-900">Address</h2>
+                                    <button *ngIf="activeShipping" (click)="openShippingModal()"
+                                        class="text-xs text-gray-500 hover:text-gray-900">
+                                        Edit
+                                    </button>
+                                </div>
+
+                                <!-- Empty State -->
+                                <div *ngIf="!activeShipping" class="text-center py-8">
+                                    <div
+                                        class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4">
+                                        <i class="fa-solid fa-location-dot text-gray-300 text-xl"></i>
+                                    </div>
+                                    <p class="text-gray-900 font-medium mb-1">No address saved</p>
+                                    <p class="text-sm text-gray-500 mb-6">Add a shipping address for faster checkout</p>
+                                    <button (click)="openShippingModal()"
+                                        class="w-full py-3 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
+                                        Add Address
+                                    </button>
+                                </div>
+
+                                <!-- Address Card -->
+                                <div *ngIf="activeShipping" class="space-y-4">
+                                    <div class="flex items-start gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <i class="fa-solid fa-house text-gray-400 text-xs"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-900 font-medium leading-relaxed text-sm">
+                                                {{ activeShipping.addressLine }}
+                                            </p>
+                                            <p class="text-gray-500 text-sm mt-1">
+                                                {{ activeShipping.city }}, {{ activeShipping.state }} {{
+                                                activeShipping.pincode }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-4 border-t border-gray-100">
+                                        <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                                            <i class="fa-solid fa-phone text-gray-400 text-xs"></i>
+                                            <span>{{ activeShipping.phone }}</span>
+                                        </div>
+
+                                        <div class="flex items-center gap-2">
+                                            <span
+                                                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-200 text-xs font-medium text-gray-600">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                                                Primary
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <button (click)="openShippingModal()"
+                                        class="w-full mt-4 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:border-gray-400 hover:text-gray-900 transition-all">
+                                        Manage Addresses
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <!-- Modals (Unchanged) -->
+            <app-profile-edit class="text-black" [visible]="showModal" [user]="userData" (closeModal)="closeModal()"
+                (updateUser)="onUserUpdate($event)">
+            </app-profile-edit>
+
+            <app-password-edit [visible]="showPasswordModal" [email]="userEmail"
+                (closePasswordModal)="closePasswordModal()">
+            </app-password-edit>
+
+            <app-shipping-address-modal *ngIf="showShippingModal" [address]="activeShipping"
+                (refresh)="loadShippingAddresses()" (close)="closeShippingModal()">
+            </app-shipping-address-modal>
+
+            
         </div>
     </div>
 </section>
@@ -173,16 +327,10 @@
 
 
 
-<app-password-edit
-  [visible]="showPasswordModal"
-  [email]="userEmail"
-  (closePasswordModal)="closePasswordModal()">
+<app-password-edit [visible]="showPasswordModal" [email]="userEmail" (closePasswordModal)="closePasswordModal()">
 </app-password-edit>
 
 
-    <app-shipping-address-modal
-  *ngIf="showShippingModal"
-  [address]="activeShipping"
-  (refresh)="loadShippingAddresses()"
-  (close)="closeShippingModal()">
+<app-shipping-address-modal *ngIf="showShippingModal" [address]="activeShipping" (refresh)="loadShippingAddresses()"
+    (close)="closeShippingModal()">
 </app-shipping-address-modal>

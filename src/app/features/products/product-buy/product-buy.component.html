@@ -30,12 +30,11 @@
                             <span>Orders</span>
                         </button>
 
-                        <!-- Filters -->
-                        <!-- <button
-                            class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-                            <i class="fa-solid fa-filter   text-purple-400"></i>
-                            <span>Related Pd</span>
-                        </button> -->
+                        <button routerLink="/app-wishlist"
+              class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
+              <i class="fa-solid fa-heart" style="color: #ed1d1d;"></i>
+              <span>Wishlist</span>
+            </button>
                     </div>
                 </div>
 
@@ -48,109 +47,210 @@
 
             </div>
 
-            <!-- Right Content: Products Grid (9/12) -->
+            <!-- Right Content: Enhanced Checkout Layout (9/12) -->
             <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
-                <!-- Loading -->
-                <div *ngIf="isLoading" class="flex justify-center items-center py-12">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+
+                <!-- Loading State -->
+                <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+                    <div class="relative">
+                        <div class="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-black"></div>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                            <i class="fa-solid fa-bag-shopping text-gray-400 text-sm"></i>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex justify-between pb-2">
-                    <button (click)="goBack()"
-                        class="flex items-center gap-2 text-gray-600 hover:text-black transition-colors">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span class=" text-sm font-medium">Back to Products</span>
-                    </button>
-                </div>
-                <!-- Selected Items for Purchase -->
-                <div *ngIf="products && products.length > 0; else noItems">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        <div *ngFor="let p of products"
-                            class="border rounded-xl bg-gray-50 p-3 flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
+                <!-- Content Wrapper -->
+                <div *ngIf="!isLoading" class="space-y-6">
+<!-- Sort Controls -->
+                    <div class="flex justify-between items-center pb-2">
+                        <!-- Breadcrumb Navigation -->
+                        <nav class="flex items-center gap-2 text-sm text-gray-500 animate-fadeIn">
+                            <button (click)="goBack()"
+                                class="group flex items-center gap-2 hover:text-black transition-all duration-300 bg-white/50 hover:bg-white px-3 py-1.5 rounded-full border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md">
+                                <i
+                                    class="fa-solid fa-tags text-xs group-hover:-translate-x-0.5 transition-transform"></i>
+                                <span>Products</span>
+                            </button>
+                            <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+                            
+                            <span class="font-medium text-gray-900">Shopping...({{ products?.length || 0 }}) </span>
 
-                            <!-- Product Image -->
-                            <div
-                                class="w-full aspect-square flex items-center justify-center bg-white rounded-lg overflow-hidden mb-3">
-                                <img [src]="p.images[0]" class="object-contain w-full h-full" />
+                        </nav>
+                        
+
+                    </div>
+                    
+
+                   
+                    <!-- Main Checkout Grid -->
+                    <div *ngIf="products && products.length > 0; else noItems"
+                        class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                        <!-- Products List (Left Column) -->
+                        <div class="lg:col-span-8 space-y-4">
+                            <!-- <h2 class="text-lg font-bold text-gray-900 px-1">Order Items</h2> -->
+
+                            <!-- Product Cards -->
+                            <div class="space-y-3">
+                                <div *ngFor="let p of products; let i = index"
+                                    class="group bg-white rounded-2xl p-4 border border-gray-200 hover:border-gray-300 hover:shadow-xl hover:shadow-gray-200/50 transition-all duration-300 flex gap-4">
+
+                                    <!-- Product Image -->
+                                    <div
+                                        class="w-24 h-24 sm:w-32 sm:h-32 bg-gray-50 rounded-xl overflow-hidden shrink-0 border border-gray-100">
+                                        <img [src]="p.images[0]"
+                                            class="object-contain w-full h-full group-hover:scale-110 transition-transform duration-500" />
+                                    </div>
+
+                                    <!-- Product Details -->
+                                    <div class="flex-1 flex flex-col justify-between py-1">
+                                        <div>
+                                            <div class="flex justify-between items-start gap-2">
+                                                <h3
+                                                    class="font-bold text-gray-900 text-base sm:text-lg line-clamp-2 leading-tight">
+                                                    {{ p.name }}</h3>
+                                                <!-- <button class="text-gray-400 hover:text-red-500 transition-colors p-1">
+                                                    <i class="fa-solid fa-xmark"></i>
+                                                </button> -->
+                                            </div>
+
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span
+                                                    class="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-lg">
+                                                    {{ p.category }}
+                                                </span>
+                                                <span class="text-xs text-gray-400">•</span>
+                                                <span class="text-xs text-gray-500">Qty: {{ p.quantity || 1 }}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex flex-wrap items-end justify-between gap-4 mt-3">
+                                            <!-- Color Selector -->
+                                            <div class="flex-1 min-w-[120px]">
+                                                <label
+                                                    class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 block">Color</label>
+                                                <div class="relative">
+                                                    <select [(ngModel)]="p.selectedColorId"
+                                                        class="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl px-3 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent cursor-pointer transition-all">
+                                                        <option *ngFor="let c of p.availableColors" [value]="c.colorId">
+                                                            {{ c.colorName }}
+                                                        </option>
+                                                    </select>
+                                                    <i
+                                                        class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 pointer-events-none"></i>
+                                                </div>
+                                            </div>
+
+                                            <!-- Price Info -->
+                                            <div class="text-right">
+                                                <p class="text-xs text-gray-500 mb-0.5">Item Total</p>
+                                                <p class="text-lg font-bold text-gray-900">{{ (p.price * (p.quantity ||
+                                                    1)) | currency:"INR" }}</p>
+                                                <p class="text-xs text-gray-500">{{ p.price | currency:"INR" }} each</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <!-- Info -->
-                            <div class="flex-1">
-                                <h3 class="font-semibold text-black text-sm truncate">{{ p.name }}</h3>
-                                <h3 class="font-semibold text-black text-sm truncate">{{ p.price | currency:"INR" }}
-                                </h3>
+                            <!-- Trust Badges -->
+                            <div class="grid grid-cols-3 gap-3 pt-4">
+                                <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-200">
+                                    <i class="fa-solid fa-shield-halved text-green-600 mb-1"></i>
+                                    <p class="text-[10px] font-bold text-gray-700 uppercase">Secure Payment</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-200">
+                                    <i class="fa-solid fa-truck-fast text-blue-600 mb-1"></i>
+                                    <p class="text-[10px] font-bold text-gray-700 uppercase">Fast Delivery</p>
+                                </div>
+                                <div class="bg-gray-50 rounded-xl p-3 text-center border border-gray-200">
+                                    <i class="fa-solid fa-rotate-left text-purple-600 mb-1"></i>
+                                    <p class="text-[10px] font-bold text-gray-700 uppercase">Easy Returns</p>
+                                </div>
+                            </div>
+                        </div>
 
-                                <p class="text-gray-500 text-xs capitalize">
-                                    Category: {{ p.category }}
-                                </p>
-                                <div class="mt-2">
-                                    <label class="text-xs text-gray-600">Select Color</label>
-                                    <select [(ngModel)]="p.selectedColorId"
-                                        class="w-full border rounded px-2 py-1 text-sm text-black">
+                        <!-- Sticky Summary (Right Column) -->
+                        <div class="lg:col-span-4">
+                            <div class="sticky top-6 space-y-4">
 
-                                        <option *ngFor="let c of p.availableColors" [value]="c.colorId">
-                                            {{ c.colorName }}
-                                        </option>
+                                <!-- Order Summary Card -->
+                                <div
+                                    class="bg-white rounded-2xl p-6 border border-gray-200 shadow-xl shadow-gray-200/50">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <i class="fa-solid fa-receipt text-gray-400"></i>
+                                        Order Summary
+                                    </h3>
 
-                                    </select>
+                                    <!-- Price Breakdown -->
+                                    <div class="space-y-3 text-sm">            <div class="flex justify-between text-gray-600">
+                                            <span>Shipping</span>
+                                            <span class="text-green-600 font-medium">Free</span>
+                                        </div> <div class="h-px bg-gray-200 my-3"></div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-base font-bold text-gray-900">Total Payable</span>
+                                            <span class="text-2xl font-bold text-black">{{ TotalAmountofSelectedProduct
+                                                | currency:"INR" }}</span>
+                                        </div>
+                                    </div>
 
+                                    <!-- Checkout Button -->
+                                    <button (click)="confirmPurchace()"
+                                        class="mt-6 w-full bg-black text-white py-4 rounded-xl font-bold text-base hover:bg-gray-800 active:scale-[0.98] transition-all duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed disabled:active:scale-100 shadow-lg shadow-gray-300 flex items-center justify-center gap-2 group">
+                                        <span>{{ isProcessing ? 'Processing...' : 'Confirm Purchase' }}</span>
+                                        <i *ngIf="!isProcessing"
+                                            class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                        <i *ngIf="isProcessing" class="fa-solid fa-circle-notch animate-spin"></i>
+                                    </button>
+
+                                    <!-- Security Note -->
+                                    <div class="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+                                        <i class="fa-solid fa-lock"></i>
+                                        <span>Encrypted & Secure Checkout</span>
+                                    </div>
                                 </div>
 
+                                <!-- Help Card -->
+                                <div
+                                    class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-4 border border-gray-200">
+                                    <div class="flex items-start gap-3">
+                                        <div
+                                            class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+                                            <i class="fa-solid fa-ship"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-gray-900">Shipping Address?</h4>
+                                            <p class="text-xs text-gray-600 mt-0.5">Add a delivery address </p>
+                                            <a  routerLink="/app-profile"
+                                                class="text-xs font-semibold text-blue-600 hover:underline mt-1 inline-block">Got to add→</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                 
 
-                                <!-- Display Quantity instead of Stock -->
-                                <p class="text-gray-500 text-xs">
-                                    Quantity: <span class="font-semibold text-black">{{ p.quantity || 1 }}</span>
-                                </p>
-
-                                <!-- Show subtotal for this item -->
-                                <p class="text-gray-700 text-sm font-semibold mt-2">
-                                    Subtotal: {{ (p.price * (p.quantity || 1)) | currency:"INR" }}
-                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Summary + Confirm Section -->
-                    <div
-                        class="mt-8 bg-gray-100 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-3">
-                        <div class="text-lg font-bold text-black">
-                            Total Payable:
+                    <!-- Empty State -->
+                    <ng-template #noItems>
+                        <div class="text-center py-16 bg-white rounded-3xl border border-gray-200 border-dashed">
+                            <div
+                                class="w-20 h-20 mx-auto mb-6 bg-gray-50 rounded-full flex items-center justify-center border border-gray-200">
+                                <i class="fa-solid fa-basket-shopping text-3xl text-gray-300"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">Your checkout is empty</h3>
+                            <p class="text-gray-500 text-sm mb-6 max-w-xs mx-auto">Looks like you haven't selected any
+                                items for purchase yet</p>
+                            <a routerLink="/app-cart"
+                                class="inline-flex items-center gap-2 bg-black text-white px-6 py-3 rounded-full font-medium hover:bg-gray-800 transition-all duration-300 hover:shadow-lg hover:shadow-gray-300 transform hover:-translate-y-0.5">
+                                <i class="fa-solid fa-cart-shopping"></i>
+                                Return to Cart
+                            </a>
                         </div>
-                        <div class="text-xl font-semibold text-black">
-                            {{ TotalAmountofSelectedProduct | currency:"INR" }}
-                        </div>
-                        <button (click)="confirmPurchace()"
-                            class="bg-black text-white px-6 py-2 rounded-full font-medium hover:bg-gray-800 transition-colors w-full sm:w-auto">
-                            Confirm Purchase
-                        </button>
-                    </div>
-                </div>
-                <!-- No Items Template -->
-                <ng-template #noItems>
-                    <div class="text-center py-12">
-                        <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                            <i class="fa-solid fa-box-open text-xl text-gray-400"></i>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-700 mb-2">No items selected for purchase</h3>
-                        <p class="text-gray-500 text-sm mb-4">Please return to cart and select products to buy</p>
-                        <a routerLink="/app-cart"
-                            class="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
-                            Back to Cart
-                        </a>
-                    </div>
-                </ng-template>
+                    </ng-template>
 
-                <!-- Empty State -->
-                <div *ngIf="isLoading" class="text-center py-12">
-                    <div class="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                        <i class="fa-solid fa-search text-xl text-gray-400"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-700 mb-2">No products found</h3>
-                    <p class="text-gray-500 text-sm mb-4">Try different search terms</p>
-                    <button routerLink="/app-products/product-list"
-                        class="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">
-                        Shop Now
-                    </button>
                 </div>
             </div>
         </div>

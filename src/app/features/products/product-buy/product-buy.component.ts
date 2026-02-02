@@ -28,9 +28,7 @@ export class ProductBuyComponent implements OnInit {
     private toast: ToastService,
     private http: HttpClient, private route: ActivatedRoute,
     private order: OrderService
-  ) {
-
-  }
+  ) {  }
 
   ngOnInit(): void {
     const navState: any = history.state;
@@ -202,11 +200,21 @@ export class ProductBuyComponent implements OnInit {
 
         this.openRazorpay(order);
       },
-      error: () => {
-        this.isProcessing = false;
-        this.toast.error("Order creation failed");
-      } 
-    });
+      error: (err) => {
+      this.isProcessing = false;
+      
+      // Extract the specific error message from the backend response
+      // err.error usually contains the body of the 400 response
+      const errorMessage = err.error?.message || "Order creation failed. Please try again.";
+      
+      this.toast.error(errorMessage);
+
+      // Optional: If it's a shipping address error, redirect them
+      if (err.status === 400 && errorMessage.toLowerCase().includes('address')) {
+        // this.router.navigate(['/profile/addresses']); 
+      }
+    } 
+  });
   }
 
   openRazorpay(order: any) {

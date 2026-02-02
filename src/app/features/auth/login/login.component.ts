@@ -54,7 +54,7 @@ export class LoginComponent implements OnInit {
             const role = profileRes?.data?.role?.toLowerCase();
 
             this.toast.success("Login Success");
-            this.toast.success("Welcome to Dominus");
+            // this.toast.success("Welcome to Dominus");
 
             if (role === 'admin') {
               this.router.navigate(['/admin/dashboard']);

@@ -51,14 +51,18 @@
             <div class="md:col-span-9 overflow-y-auto max-h-[calc(100vh-4rem)] pr-2 hide-scrollbar">
 
 
-
-                <div class="flex justify-between pb-2">
+<!-- Breadcrumb Navigation -->
+                <nav class="flex items-center gap-2 text-sm text-gray-500 animate-fadeIn">
                     <button routerLink="/app-home"
-                        class="flex items-center gap-2 text-gray-600 hover:text-black transition-colors">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        <span class=" text-sm font-medium">Back to Home</span>
+                        class="group flex items-center gap-2 hover:text-black transition-all duration-300 bg-white/50 hover:bg-white px-3 py-1.5 rounded-full border border-transparent hover:border-gray-200 shadow-sm hover:shadow-md">
+                        <i class="fa-solid fa-house text-xs group-hover:-translate-x-0.5 transition-transform"></i>
+                        <span>Home</span>
                     </button>
-                </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-gray-300"></i>
+
+                    <span class="font-medium text-gray-900">Abouting...</span>
+
+                </nav>
                 <!-- Header -->
                 <div class="text-center mb-12 mt-3">
                     <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-3">

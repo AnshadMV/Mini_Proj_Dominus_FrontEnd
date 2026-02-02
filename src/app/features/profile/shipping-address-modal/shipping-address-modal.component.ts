@@ -25,7 +25,7 @@ export class ShippingAddressModalComponent implements OnChanges {
   constructor(
     private shippingService: ShippingAddressService,
     private toast: ToastService
-  ) {}
+  ) { }
 
   ngOnChanges(): void {
     if (this.address) {
@@ -56,7 +56,18 @@ export class ShippingAddressModalComponent implements OnChanges {
         this.refresh.emit();
         this.close.emit();
       },
-      error: () => this.toast.error('Failed to save address')
+      error: (error) => {
+        if (error.error?.errors) {
+          // Cast the flattened values as an array of strings
+          const validationErrors = Object.values(error.error.errors).flat() as string[];
+
+          const errorMessage = validationErrors.length > 0
+            ? validationErrors[0]
+            : "Invalid Data";
+
+          this.toast.error(errorMessage);
+        }
+      }
     });
   }
 
