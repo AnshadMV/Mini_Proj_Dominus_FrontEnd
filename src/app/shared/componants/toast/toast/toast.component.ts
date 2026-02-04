@@ -9,36 +9,60 @@ import { ToastService } from 'src/app/core/services/toast.service';
 })
 export class ToastComponent implements OnInit, OnDestroy {
   toasts: Toast[] = [];
+  private intervalIds: Map<number, any> = new Map(); // Store interval IDs for cleanup
 
   constructor(private toastService: ToastService) {}
 
   ngOnInit(): void {
     this.toastService.toastState$.subscribe(toasts => {
+      // Clear all existing intervals when new toasts arrive
+      this.clearAllIntervals();
       this.toasts = toasts;
 
       // Initialize a timer for each toast
       this.toasts.forEach(toast => {
-        if (toast.duration) {
-          toast.progress = 100;
-          const interval = setInterval(() => {
-            if (toast.progress > 0) {
-              toast.progress -= 1; 
-            } else {
-              clearInterval(interval); // Stop the timer when the progress reaches 0
-              this.remove(toast.id); // Optionally remove toast when time is up
-            }
-          }, toast.duration / 100); // duration is the total time (in ms) for the progress bar to go from 100% to 0%
-        }
+        this.startProgressTimer(toast);
       });
     });
   }
-  remove(id: number) {
+
+  private startProgressTimer(toast: Toast): void {
+    if (toast.duration) {
+      toast.progress = 100;
+      
+      const interval = setInterval(() => {
+        if (toast.progress > 0) {
+          toast.progress -= 1; 
+        } else {
+          clearInterval(interval);
+          this.intervalIds.delete(toast.id);
+          this.remove(toast.id);
+        }
+      }, toast.duration / 100);
+      
+      this.intervalIds.set(toast.id, interval);
+    }
+  }
+
+  remove(id: number): void {
+    // Clear interval for this toast
+    const intervalId = this.intervalIds.get(id);
+    if (intervalId) {
+      clearInterval(intervalId);
+      this.intervalIds.delete(id);
+    }
+    
     this.toastService.remove(id);
   }
-  ngOnDestroy(): void {
-    // Cleanup any ongoing intervals
-    this.toasts.forEach(toast => {
-      clearInterval(toast.interval);
+
+  private clearAllIntervals(): void {
+    this.intervalIds.forEach((intervalId) => {
+      clearInterval(intervalId);
     });
+    this.intervalIds.clear();
+  }
+
+  ngOnDestroy(): void {
+    this.clearAllIntervals();
   }
 }

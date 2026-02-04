@@ -1,38 +1,54 @@
-<div *ngIf="toasts.length > 0" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 w-72">
+<div *ngIf="toasts.length > 0" class="fixed top-4 right-4 z-[100] flex flex-col gap-3 w-80 max-w-[90vw]">
   <div *ngFor="let toast of toasts" 
-       class="group relative flex flex-col overflow-hidden rounded-xl bg-white p-3
+       class="group relative flex flex-col overflow-hidden rounded-xl bg-white p-4
               shadow-[0_8px_20px_rgba(0,0,0,0.12)] border border-gray-100 animate-slideIn">
     
-    <div class="flex items-center gap-3">
-      <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg shadow-sm"
+    <div class="flex items-start gap-3">
+      <!-- Icon container -->
+      <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-sm mt-0.5"
            [ngClass]="{
              'bg-emerald-500 text-white shadow-emerald-200': toast.type === 'success',
              'bg-rose-500 text-white shadow-rose-200': toast.type === 'error',
-             'bg-blue-500 text-white shadow-blue-200': toast.type === 'info'
+             'bg-blue-500 text-white shadow-blue-200': toast.type === 'info',
+             'bg-amber-500 text-white shadow-amber-200': toast.type === 'warning'
            }">
-        <span class="text-xs font-bold" *ngIf="toast.type === 'success'">✓</span>
-        <span class="text-xs font-bold" *ngIf="toast.type === 'error'">✕</span>
+        <span class="text-sm font-bold" *ngIf="toast.type === 'success'">✓</span>
+        <span class="text-sm font-bold" *ngIf="toast.type === 'error'">✕</span>
+        <span class="text-sm font-bold" *ngIf="toast.type === 'info'">i</span>
+        <span class="text-sm font-bold" *ngIf="toast.type === 'warning'">!</span>
       </div>
 
+      <!-- Message container -->
       <div class="flex-1 min-w-0">
-        <p class="truncate text-xs font-bold text-gray-800 tracking-tight">
+        <!-- Title (optional) -->
+        <h4 *ngIf="toast.title" class="text-sm font-bold text-gray-800 mb-1">
+          {{ toast.title }}
+        </h4>
+        
+        <!-- Message with better text handling -->
+        <p class="text-sm text-gray-600 leading-relaxed break-words">
           {{ toast.message }}
         </p>
       </div>
 
+      <!-- Close button -->
       <button (click)="remove(toast.id)" 
-              class="h-5 w-5 rounded-md hover:bg-gray-100 text-gray-400 flex items-center justify-center transition-colors">
-        <span class="text-sm">×</span>
+              class="h-6 w-6 rounded-md hover:bg-gray-100 text-gray-400 flex items-center justify-center 
+                     transition-colors flex-shrink-0 mt-0.5"
+              aria-label="Close toast">
+        <span class="text-lg leading-none">×</span>
       </button>
     </div>
 
-    <div class="mt-2 h-1 w-full overflow-hidden rounded-full bg-gray-100 shadow-inner">
-      <div class="h-full transition-all duration-100"
+    <!-- Progress bar -->
+    <div *ngIf="toast.duration" class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-gray-100 shadow-inner">
+      <div class="h-full transition-all duration-100 ease-linear"
            [style.width.%]="toast.progress"
            [ngClass]="{
              'bg-emerald-500': toast.type === 'success',
              'bg-rose-500': toast.type === 'error',
-             'bg-blue-500': toast.type === 'info'
+             'bg-blue-500': toast.type === 'info',
+             'bg-amber-500': toast.type === 'warning'
            }">
       </div>
     </div>

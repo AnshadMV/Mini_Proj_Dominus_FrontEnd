@@ -1,87 +1,128 @@
-import { Component, HostListener, inject, OnInit } from '@angular/core';
+import { Component, HostListener, inject, OnInit, ElementRef, ViewChildren, QueryList, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { website_constants } from 'src/app/core/constants/app.constant';
 import { VideoServices } from 'src/app/core/models/homevideoservice.model';
 import { Product } from 'src/app/core/models/product.model';
 import { HomeVideoService } from 'src/app/core/services/homevideo.service';
 import { ProductService } from 'src/app/core/services/product.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, AfterViewInit {
+
+  @ViewChildren('videoIframe') videoIframes!: QueryList<ElementRef<HTMLIFrameElement>>;
 
   videoError = false;
   isLoading = true;
   isMenuOpen = false;
   screenWidth = window.innerWidth;
-  private productService = inject(ProductService);
   private HomeVideoService = inject(HomeVideoService);
-  private router = inject(Router)
+  private router = inject(Router);
+  private sanitizer = inject(DomSanitizer);
+  
+  private lazyVideoObserver!: IntersectionObserver;
+  private videoLoadedMap = new Map<number, boolean>(); // Track loaded videos
+  
   productCount: number = website_constants.HomePage.FeatureProductCount;
   products: Product[] = [];
   services: VideoServices[] = [];
   showSkeleton = true;
+  
   ngOnInit() {
-    this.loadVideoServices(); if (this.screenWidth >= 768) this.isMenuOpen = true;
-    this.loadProducts();
-    // Add page transition class
+    this.loadVideoServices();
+    if (this.screenWidth >= 768) this.isMenuOpen = true;
     document.body.classList.add('page-transition');
   }
 
   ngAfterViewInit() {
     this.initScrollAnimations();
     this.initIntersectionObserver();
+    this.setupLazyVideoLoading();
+  }
+
+  ngOnDestroy() {
+    if (this.lazyVideoObserver) {
+      this.lazyVideoObserver.disconnect();
+    }
+  }
+
+  setupLazyVideoLoading() {
+    this.lazyVideoObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const iframe = entry.target as HTMLIFrameElement;
+            const dataSrc = iframe.getAttribute('data-src');
+            const index = parseInt(iframe.getAttribute('data-index') || '0');
+            
+            if (dataSrc && !this.videoLoadedMap.get(index)) {
+              // Load the video
+              iframe.src = dataSrc;
+              this.videoLoadedMap.set(index, true);
+              
+              // Remove data attributes
+              iframe.removeAttribute('data-src');
+              iframe.removeAttribute('data-index');
+              
+              // Stop observing this element
+              this.lazyVideoObserver.unobserve(iframe);
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '50px', // Start loading 50px before entering viewport
+        threshold: 0.1
+      }
+    );
+
+    // Observe video iframes after they're available
+    setTimeout(() => {
+      this.videoIframes.forEach((iframeRef, index) => {
+        const iframe = iframeRef.nativeElement;
+        this.lazyVideoObserver.observe(iframe);
+        this.videoLoadedMap.set(index, false);
+      });
+    }, 100);
   }
 
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
-  loadProducts() {
-    this.productService.getTopProducts(this.productCount).subscribe({
-      next: (products) => {
-        this.products = products;
-        setTimeout(() => {
-          this.showSkeleton = false;
-          this.animateProductCards();
-        }, 500);
-      },
-      error: (error) => {
-        console.error('Error loading products:', error);
-        this.showSkeleton = false;
-
-      }
-    });
-  }
-  // scrollCarousel(direction: 'left' | 'right') {
-  //   const container = document.getElementById('carousel');
-  //   if (!container) return;
-  //   const scrollAmount = 340;
-  //   container.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
-  // }
   loadVideoServices() {
     this.HomeVideoService.getFeaturedVideoServices(5)
       .subscribe({
-        next: data => this.services = data,
+        next: data => {
+          this.services = data;
+          // Initialize all videos as not loaded
+          this.services.forEach((_, index) => {
+            this.videoLoadedMap.set(index, false);
+          });
+        },
         error: () => console.error('Failed to load video services')
       });
   }
 
+  getSafeUrl(url: string): SafeResourceUrl {
+    // Return the URL as-is for lazy loading data-src
+    return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
 
   onVideoLoaded() {
     this.isLoading = false;
-
     const video = document.querySelector('video');
     if (video) {
-      video.muted = true;    // inline muted work aakunnilla. So i created this
+      video.muted = true;
       video.classList.remove('opacity-0');
       video.classList.add('opacity-100');
     }
-
   }
+
   onResize(event: Event) {
     this.screenWidth = window.innerWidth;
     if (this.screenWidth >= 768) {
@@ -132,7 +173,6 @@ export class HomeComponent implements OnInit {
       });
     }, { threshold: 0.1 });
 
-    // Observe all animatable elements
     document.querySelectorAll('.fade-in, .slide-in-left, .slide-in-right, .scale-in, .stagger-item')
       .forEach(el => observer.observe(el));
   }
@@ -175,5 +215,4 @@ export class HomeComponent implements OnInit {
   onBeforeUnload() {
     document.body.classList.remove('page-transition');
   }
-
 }

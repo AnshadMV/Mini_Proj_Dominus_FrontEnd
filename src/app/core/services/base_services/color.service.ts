@@ -2,13 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Color } from '../../models/base-models/Color.model';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ColorService {
 
-  private baseUrl = "https://localhost:7121/api/Colors";
+  private baseUrl = environment.API.COLORURL;
 
   constructor(private http: HttpClient) {}
 

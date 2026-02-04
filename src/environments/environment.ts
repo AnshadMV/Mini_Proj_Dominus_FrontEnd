@@ -4,6 +4,7 @@ export const environment = {
     BASE_URL: 'https://dominus.runasp.net/api',
     PRODUCTURL: 'https://dominus.runasp.net/api/Products',
     CATEGORYURL: 'https://dominus.runasp.net/api/Categories',
+    COLORURL: 'https://dominus.runasp.net/api/Colors',
     CARTURL: 'https://dominus.runasp.net/api/Cart',
     WISH_URL: 'https://dominus.runasp.net/api/Wishlist',
     USERURL: 'https://dominus.runasp.net/api/Users/Admin/GetAll',

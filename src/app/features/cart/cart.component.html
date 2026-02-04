@@ -31,8 +31,7 @@
             </button>
             <button routerLink="/app-about"
               class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-3 py-1 text-sm text-black hover:bg-gray-100 transition-colors">
-              <i class="fa-phone fa-box text-green-400"></i>
-              <span>Contact</span>
+              <i class="fa-solid fa-phone " style="color: #B197FC;"></i> <span>Contact</span>
             </button>
             <!-- Filters -->
             <!-- <button
@@ -138,10 +137,14 @@
                 </div>
               </div>
 
-              <!-- Buy Now -->
-              <button (click)="buyProduct(item)"
-                class="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 rounded-full text-sm transition-all fa-fade">
-                Buy Now
+              <!-- Buy Now Button -->
+              <button (click)="buyProduct(item)" [disabled]="item.product.currentStock === 0"
+                class="w-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-400 hover:from-yellow-500 hover:via-yellow-600 hover:to-yellow-500 disabled:from-gray-200 disabled:to-gray-200 disabled:cursor-not-allowed text-black disabled:text-gray-400 font-bold py-2.5 px-4 rounded-xl text-sm shadow-[0_2px_0_rgb(180,83,9)] hover:shadow-[0_1px_0_rgb(180,83,9)] hover:translate-y-0.5 active:shadow-none active:translate-y-1 transition-all duration-150 flex items-center justify-center gap-2 group/btn">
+                <span>Buy Now</span>
+                <svg class="w-4 h-4 transition-transform group-hover/btn:translate-x-0.5" fill="none"
+                  stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
               </button>
             </div>
           </div>
@@ -181,10 +184,3 @@
     </div>
   </div>
 </section>
-
-
-
-
-
-
-
